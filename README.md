@@ -1,8 +1,7 @@
-# Legacy Web Application Improvement
+# Happy Plants - Legacy Web Application Improvement 
 
 This repository contains a legacy web application originally developed by a previous student group.
-The purpose of this project is to analyze, improve, test, and extend the application as part of a
-system development course.
+The purpose of this project is to analyze, improve, test, and extend the application as part of a system development course.
 
 ## Project Scope
 - Improve code quality and structure
@@ -20,8 +19,8 @@ system development course.
 
 
 
-## Old README
-# MyHappyPlants
+# Old README
+## MyHappyPlants
 
 ### Länk till repot på github
 https://github.com/antonholmCO/MyHappyPlants
