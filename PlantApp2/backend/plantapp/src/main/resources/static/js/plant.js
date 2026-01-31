@@ -1,4 +1,4 @@
-// Plant model - portad från legacy Java code
+// Plant model - from old code
 class Plant {
     constructor(id, name, species, wateringIntervalDays, lastWatered = new Date()) {
         this.id = id;

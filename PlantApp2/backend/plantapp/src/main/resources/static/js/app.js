@@ -1,20 +1,17 @@
 // Main application logic
 let plants = [];
 
-// Initialize app
 async function init() {
-    console.log('🌱 Initializing Plant Care App...');
+    console.log('Initializing Plant Care App...');
     await loadPlants();
     setupEventListeners();
 }
 
-// Load plants from API
 async function loadPlants() {
     plants = await api.getPlants();
     renderPlants();
 }
 
-// Render plants to DOM
 function renderPlants() {
     const container = document.getElementById('plants-container');
 
@@ -35,13 +32,11 @@ function renderPlants() {
     `).join('');
 }
 
-// Water a plant
 async function waterPlant(plantId) {
     await api.waterPlant(plantId);
     await loadPlants(); // Reload to update UI
 }
 
-// Setup event listeners
 function setupEventListeners() {
     const form = document.getElementById('plant-form');
     form.addEventListener('submit', async (e) => {
@@ -54,10 +49,8 @@ function setupEventListeners() {
         await api.addPlant(name, species, interval);
         await loadPlants();
 
-        // Clear form
         form.reset();
     });
 }
 
-// Start app when page loads
 document.addEventListener('DOMContentLoaded', init);

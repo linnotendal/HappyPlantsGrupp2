@@ -2,7 +2,6 @@
 const API_BASE_URL = 'http://localhost:8080/api';
 
 const api = {
-    // Get all plants
     async getPlants() {
         try {
             const response = await fetch(`${API_BASE_URL}/plants`);
@@ -16,7 +15,6 @@ const api = {
         }
     },
 
-    // Add new plant
     async addPlant(name, species, wateringIntervalDays) {
         try {
             const response = await fetch(`${API_BASE_URL}/plants`, {
@@ -34,7 +32,6 @@ const api = {
         }
     },
 
-    // Water a plant
     async waterPlant(plantId) {
         try {
             const response = await fetch(`${API_BASE_URL}/plants/${plantId}/water`, {
@@ -47,33 +44,4 @@ const api = {
             this.waterPlantInLocalStorage(plantId);
         }
     },
-
-    // ===== FALLBACK: LocalStorage methods (används tills backend är klar) =====
-    getPlantsFromLocalStorage() {
-        const plants = JSON.parse(localStorage.getItem('plants') || '[]');
-        return plants.map(p => new Plant(p.id, p.name, p.species, p.wateringIntervalDays, p.lastWatered));
-    },
-
-    addPlantToLocalStorage(name, species, wateringIntervalDays) {
-        const plants = JSON.parse(localStorage.getItem('plants') || '[]');
-        const newPlant = {
-            id: Date.now(),
-            name,
-            species,
-            wateringIntervalDays,
-            lastWatered: new Date()
-        };
-        plants.push(newPlant);
-        localStorage.setItem('plants', JSON.stringify(plants));
-        return new Plant(newPlant.id, newPlant.name, newPlant.species, newPlant.wateringIntervalDays, newPlant.lastWatered);
-    },
-
-    waterPlantInLocalStorage(plantId) {
-        const plants = JSON.parse(localStorage.getItem('plants') || '[]');
-        const plant = plants.find(p => p.id === plantId);
-        if (plant) {
-            plant.lastWatered = new Date();
-            localStorage.setItem('plants', JSON.stringify(plants));
-        }
-    }
 };
