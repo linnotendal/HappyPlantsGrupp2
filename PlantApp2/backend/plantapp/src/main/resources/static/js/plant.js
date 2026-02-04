@@ -1,31 +1,27 @@
-// Plant model - from old code
-class Plant {
-    constructor(id, name, species, wateringIntervalDays, lastWatered = new Date()) {
-        this.id = id;
-        this.name = name;
-        this.species = species;
-        this.wateringIntervalDays = wateringIntervalDays;
-        this.lastWatered = new Date(lastWatered);
-    }
+ //Plant class - kept from old code, with small additions
 
-    needsWatering() {
-        const nextWaterDate = new Date(this.lastWatered);
-        nextWaterDate.setDate(nextWaterDate.getDate() + this.wateringIntervalDays);
-        return new Date() > nextWaterDate;
-    }
+ class Plant {
+     constructor(id, name, species, wateringIntervalDays, lastWatered = null) {
+         this.id = id;
+         this.name = name;
+         this.species = species;
+         this.wateringIntervalDays = wateringIntervalDays;
+         this.lastWatered = lastWatered ? new Date(lastWatered) : null;
+     }
 
-    water() {
-        this.lastWatered = new Date();
-    }
+     // Sets lastWatered when added to library
+     addToLibrary() {
+         this.lastWatered = new Date();
+     }
+ }
 
-    getDaysSinceWatered() {
-        const diffTime = Math.abs(new Date() - this.lastWatered);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        return diffDays;
-    }
-
-    getDaysUntilWatering() {
-        const daysSince = this.getDaysSinceWatered();
-        return Math.max(0, this.wateringIntervalDays - daysSince);
-    }
-}
+const HARDCODED_PLANTS = [
+    new Plant(1, "Monstera",        "Monstera deliciosa",         7),
+    new Plant(2, "Snake Plant",     "Sansevieria trifasciata",   14),
+    new Plant(3, "Pothos",          "Epipremnum aureum",          5),
+    new Plant(4, "Peace Lily",      "Spathiphyllum",             10),
+    new Plant(5, "Rubber Plant",    "Ficus elastica",             9),
+    new Plant(6, "Fiddle Leaf Fig", "Ficus lyrata",               7),
+    new Plant(7, "ZZ Plant",        "Zamioculcas zamiifolia",    21),
+    new Plant(8, "Spider Plant",    "Chlorophytum comosum",       5)
+];

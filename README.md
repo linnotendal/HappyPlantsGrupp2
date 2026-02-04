@@ -1,20 +1,21 @@
-# Happy Plants - Legacy Web Application Improvement 
+# Happy Plants - Web Application Improvement 
 
-This repository contains a legacy web application originally developed by a previous student group. The purpose of this project is to analyze, improve, test, and extend the application as part of a system development course.
+This repository contains a legacy web application originally developed by a 
+previous student group. The purpose of this project is to remake, improve, test, 
+and extend the application as part of a system development course.
 
 ## Project Scope
+- Remake from a desktop app to a web app
 - Improve code quality and structure
-- Fix bugs
 - Implement selected new requirements
-- Add and improve automated tests
 
 ## Contributors
 - Linn Otendal (linnotendal)
-- Lana (github-username)
-- Christoffer (github-username)
-- Lilas (github-username)
-- Ellen-Mae (github-username)
-- Erik (github-username)
+- Lana Maher (lana2521)
+- Christoffer Björnheimer (Bjornheimer89)
+- Lilas Beirakdar (LilasBe)
+- Ellen-Mae Lantz (MagiicalMae)
+- Erik Sjöberg (Er7k)
 
 
 ------------------------------------------------------
