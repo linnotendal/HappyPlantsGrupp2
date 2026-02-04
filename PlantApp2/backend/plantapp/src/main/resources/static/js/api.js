@@ -35,6 +35,15 @@ const api = {
         this._saveLibrary(library.filter(p => p.id !== plantId));
     },
 
+    waterPlant(plantId) {
+        const library = this.getLibrary();
+        const plant = library.find(p => p.id === plantId);
+        if (plant) {
+            plant.lastWatered = new Date();
+            this._saveLibrary(library);
+        }
+    },
+
     isInLibrary(plantId) {
         return this.getLibrary().some(p => p.id === plantId);
     },

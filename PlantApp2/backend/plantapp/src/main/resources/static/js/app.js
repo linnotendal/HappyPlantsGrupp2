@@ -1,6 +1,4 @@
-
-//UI logic only. Does not touch data directly - uses api.js for everything.
-
+//UI logic only. Does not touch data directly, uses api.js for everything.
 
 document.addEventListener('DOMContentLoaded', () => {
     renderDiscoverSection();
@@ -60,14 +58,34 @@ function renderLibrarySection() {
     emptyMsg.classList.add('hidden');
 
     library.forEach(plant => {
+        const daysUntil = plant.getDaysUntilWatering();
+        const needsWater = plant.needsWatering();
+        const progress = plant.getProgress();
+
+        // Progress bar color
+        let barColor = '#6b9c38';
+        if (progress < 0.5)  barColor = '#e6a817';
+        if (progress < 0.25) barColor = '#d44';
+
+        let statusText = `Needs water in ${daysUntil} day${daysUntil !== 1 ? 's' : ''}`;
+        if (needsWater) statusText = 'Needs water now!';
+
         grid.innerHTML += `
-            <div class="plant-card">
+            <div class="plant-card ${needsWater ? 'needs-water' : ''}">
                 <h3>${plant.name}</h3>
                 <p><strong>Species:</strong> ${plant.species}</p>
-                <p><strong>Watering frequency:</strong> every ${plant.wateringIntervalDays} days</p>
-                <p class="added-date">Added: ${plant.lastWatered ? new Date(plant.lastWatered).toLocaleDateString('en-US') : 'Unknown'}</p>
-                
+
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${progress * 100}%; background-color: ${barColor};"></div>
+                    </div>
+                    <p class="water-status ${needsWater ? 'urgent' : ''}">${statusText}</p>
+                </div>
+
+                <p class="last-watered">Last watered: ${plant.lastWatered ? new Date(plant.lastWatered).toLocaleDateString('en-US') : 'Never'}</p>
+
                 <div class="card-btn-row">
+                    <button class="btn-water" onclick="waterPlant(${plant.id})">💧 Water</button>
                     <button class="btn-remove" onclick="removeFromLibrary(${plant.id})">🗑️ Remove</button>
                 </div>
             </div>
@@ -89,4 +107,9 @@ function removeFromLibrary(plantId) {
     api.removeFromLibrary(plantId);
     renderLibrarySection();
     renderDiscoverSection();
+}
+
+function waterPlant(plantId) {
+    api.waterPlant(plantId);
+    renderLibrarySection();
 }
