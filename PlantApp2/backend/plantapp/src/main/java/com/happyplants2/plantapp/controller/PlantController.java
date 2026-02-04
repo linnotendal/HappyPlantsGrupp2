@@ -10,32 +10,52 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/plants")
+@RequestMapping("/api")
 @CrossOrigin(origins = "*")
 public class PlantController {
 
     @Autowired
     private PlantRepository plantRepository;
 
-    @GetMapping
-    public List<Plant> getAllPlants() {
+    /**
+     * Get all plants in user's library
+     * GET /api/library
+     */
+    @GetMapping("/library")
+    public List<Plant> getLibrary() {
         return plantRepository.findAll();
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Plant> getPlantById(@PathVariable Long id) {
-        return plantRepository.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    @PostMapping
-    public Plant createPlant(@RequestBody Plant plant) {
-        plant.setLastWatered(LocalDate.now());
+    /**
+     * Add a plant to user's library
+     * POST /api/library
+     */
+    @PostMapping("/library")
+    public Plant addToLibrary(@RequestBody Plant plant) {
+        if (plant.getLastWatered() == null) {
+            plant.setLastWatered(LocalDate.now());
+        }
         return plantRepository.save(plant);
     }
 
-    @PutMapping("/{id}/water")
+    /**
+     * Remove a plant from library
+     * DELETE /api/library/{id}
+     */
+    @DeleteMapping("/library/{id}")
+    public ResponseEntity<Void> removeFromLibrary(@PathVariable Long id) {
+        if (plantRepository.existsById(id)) {
+            plantRepository.deleteById(id);
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    /**
+     * Water a plant (update lastWatered to today)
+     * PUT /api/library/{id}/water
+     */
+    @PutMapping("/library/{id}/water")
     public ResponseEntity<Plant> waterPlant(@PathVariable Long id) {
         return plantRepository.findById(id)
                 .map(plant -> {
@@ -46,12 +66,14 @@ public class PlantController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePlant(@PathVariable Long id) {
-        if (plantRepository.existsById(id)) {
-            plantRepository.deleteById(id);
-            return ResponseEntity.ok().build();
-        }
-        return ResponseEntity.notFound().build();
+    /**
+     * Get a specific plant
+     * GET /api/library/{id}
+     */
+    @GetMapping("/library/{id}")
+    public ResponseEntity<Plant> getPlantById(@PathVariable Long id) {
+        return plantRepository.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 }

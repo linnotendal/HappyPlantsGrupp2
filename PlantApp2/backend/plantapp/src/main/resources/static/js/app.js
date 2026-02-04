@@ -21,12 +21,18 @@ function showSection(sectionName) {
     }
 }
 
-function renderDiscoverSection() {
+async function renderDiscoverSection() {
     const grid = document.getElementById('discover-grid');
+    grid.innerHTML = '<p>Loading...</p>';
+
+    const checks = await Promise.all(
+        HARDCODED_PLANTS.map(p => api.isInLibrary(p.id))
+    );
+
     grid.innerHTML = '';
 
-    HARDCODED_PLANTS.forEach(plant => {
-        const inLibrary = api.isInLibrary(plant.id);
+    HARDCODED_PLANTS.forEach((plant, index) => {
+        const inLibrary = checks[index];
 
         grid.innerHTML += `
             <div class="plant-card">
@@ -44,10 +50,13 @@ function renderDiscoverSection() {
     });
 }
 
-function renderLibrarySection() {
+async function renderLibrarySection() {
     const grid = document.getElementById('library-grid');
     const emptyMsg = document.getElementById('empty-library-msg');
-    const library = api.getLibrary();
+
+    grid.innerHTML = '<p>Loading...</p>';
+
+    const library = await api.getLibrary();
 
     grid.innerHTML = '';
 
@@ -62,7 +71,6 @@ function renderLibrarySection() {
         const needsWater = plant.needsWatering();
         const progress = plant.getProgress();
 
-        // Progress bar color
         let barColor = '#6b9c38';
         if (progress < 0.5)  barColor = '#e6a817';
         if (progress < 0.25) barColor = '#d44';
@@ -93,23 +101,24 @@ function renderLibrarySection() {
     });
 }
 
-function addToLibrary(plantId) {
+async function addToLibrary(plantId) {
     const source = HARDCODED_PLANTS.find(p => p.id === plantId);
     if (!source) return;
 
     const plant = new Plant(source.id, source.name, source.species, source.wateringIntervalDays);
-    api.addToLibrary(plant);
+    await api.addToLibrary(plant);
 
     renderDiscoverSection();
+    renderLibrarySection();
 }
 
-function removeFromLibrary(plantId) {
-    api.removeFromLibrary(plantId);
+async function removeFromLibrary(plantId) {
+    await api.removeFromLibrary(plantId);
     renderLibrarySection();
     renderDiscoverSection();
 }
 
-function waterPlant(plantId) {
-    api.waterPlant(plantId);
+async function waterPlant(plantId) {
+    await api.waterPlant(plantId);
     renderLibrarySection();
 }
