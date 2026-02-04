@@ -204,6 +204,9 @@ $RECYCLE.BIN/
 PasswordsAndKeys.java
 PasswordsAndKeys.class
 
+# Contains API key for perenual
+key.json
+
 lastLogin.txt
 searchHistory.txt
 

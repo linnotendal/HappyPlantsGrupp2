@@ -6,7 +6,25 @@
 
 const STORAGE_KEY = 'happyplants_library';
 
-const api = {
+import jsonData from '/js/key.json' with {type: 'json'};
+
+const API_KEY = jsonData.apikey;
+
+export const api = {
+
+    async getPlantsPerPageAPI() {
+        try {
+            const response = await fetch('https://perenual.com/api/v2/species-list?page=1&key=' + API_KEY)
+            var plants = await response.json();
+            console.log(plants.data)
+
+            return plants.data;
+        } catch (error) {
+            console.log(error)
+
+            return null;
+        }
+    },
 
     getLibrary() {
         const data = localStorage.getItem(STORAGE_KEY);
