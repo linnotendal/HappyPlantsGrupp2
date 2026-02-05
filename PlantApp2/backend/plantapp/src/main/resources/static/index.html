@@ -12,21 +12,25 @@
         <h1>My Happy Plants</h1>
         <nav>
             <button class="nav-btn active" onclick="showSection('discover')">Discover</button>
-            <button class="nav-btn" onclick="showSection('library')">My Plants</button>
+            <button class="nav-btn " onclick="showSection('library')">My Plants</button>
         </nav>
     </header>
 
     <main>
         <!-- DISCOVER: Browse available plants -->
         <section id="discover-section">
+            <button class="btn-toggle-grid" onclick="toggleGrid('discover')">Toggle GridList</button>
             <h2>Discover Plants</h2>
             <p class="section-description">Find plants you like and add them to your library</p>
+            
             <div id="discover-grid" class="plant-grid"></div>
         </section>
 
         <!-- LIBRARY: User's saved plants -->
         <section id="library-section" class="hidden">
+            <button class="btn-toggle-grid" onclick="toggleGrid('library')">Toggle GridList</button>
             <h2>My Plants</h2>
+            
             <div id="library-grid" class="plant-grid"></div>
             <p id="empty-library-msg" class="empty-message">
                 You have no plants yet. Go to <strong>Discover</strong> to add some! 🌿
