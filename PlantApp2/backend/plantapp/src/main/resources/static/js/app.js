@@ -79,26 +79,53 @@ async function renderLibrarySection() {
         if (needsWater) statusText = 'Needs water now!';
 
         grid.innerHTML += `
-            <div class="plant-card ${needsWater ? 'needs-water' : ''}">
-                <h3>${plant.name}</h3>
-                <p><strong>Species:</strong> ${plant.species}</p>
+<div class="plant-card ${needsWater ? 'needs-water' : ''}">
 
-                <div class="progress-container">
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: ${progress * 100}%; background-color: ${barColor};"></div>
-                    </div>
-                    <p class="water-status ${needsWater ? 'urgent' : ''}">${statusText}</p>
-                </div>
+    <div class="card-menu">
+        <button class="menu-btn" onclick="toggleMenu(event, ${plant.id})">⋮</button>
+        <div class="menu-dropdown" id="menu-${plant.id}">
+            <button onclick="editPlant(${plant.id})">Edit</button>
+            <button onclick="removeFromLibrary(${plant.id})">Remove</button>
+        </div>
+    </div>
 
-                <p class="last-watered">Last watered: ${plant.lastWatered ? new Date(plant.lastWatered).toLocaleDateString('en-US') : 'Never'}</p>
+    <h3>${plant.name}</h3>
+    <p><strong>Species:</strong> ${plant.species}</p>
 
-                <div class="card-btn-row">
-                    <button class="btn-water" onclick="waterPlant(${plant.id})">💧 Water</button>
-                    <button class="btn-remove" onclick="removeFromLibrary(${plant.id})">🗑️ Remove</button>
-                </div>
-            </div>
-        `;
+    <div class="progress-container">
+        <div class="progress-bar">
+            <div class="progress-fill"
+                 style="width:${progress * 100}%; background-color:${barColor};"></div>
+        </div>
+        <p class="water-status ${needsWater ? 'urgent' : ''}">
+            ${statusText}
+        </p>
+    </div>
+
+    <p class="last-watered">
+        Last watered:
+        ${plant.lastWatered
+            ? new Date(plant.lastWatered).toLocaleDateString('en-US')
+            : 'Never'}
+    </p>
+
+    <div class="card-btn-row">
+        <button class="btn-water" onclick="waterPlant(${plant.id})">💧 Water</button>
+    </div>
+
+</div>
+`;
     });
+}
+
+function toggleMenu(e, id) {
+    e.stopPropagation()
+
+    document.querySelectorAll('.menu-dropdown')
+        .forEach(m => m.classList.remove('open'))
+
+    const menu = document.getElementById(`menu-${id}`)
+    menu.classList.toggle('open')
 }
 
 async function addToLibrary(plantId) {
@@ -121,4 +148,16 @@ async function removeFromLibrary(plantId) {
 async function waterPlant(plantId) {
     await api.waterPlant(plantId);
     renderLibrarySection();
+}
+
+let gridActive = false
+
+function toggleGrid(section) {
+    const grid =
+        section === 'discover'
+            ? document.getElementById('discover-grid')
+            : document.getElementById('library-grid')
+
+    grid.classList.toggle('grid-view')
+    btn.textContent = gridActive ? 'List view' : 'Grid view'
 }
