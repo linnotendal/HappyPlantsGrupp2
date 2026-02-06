@@ -1,5 +1,4 @@
 //UI logic only. Does not touch data directly, uses api.js for everything.
-import {api} from "/js/api.js";
 
 document.addEventListener('DOMContentLoaded', () => {
     renderDiscoverSection();
@@ -36,7 +35,7 @@ async function renderDiscoverSection() {
     console.log(plants)
 
     plants.forEach(plant => {
-                grid.innerHTML += `
+            grid.innerHTML += `
             <div class="plant-card">
                 <h3>${plant.common_name}</h3>
                 <p><strong>Species:</strong> ${plant.scientific_name[0]}</p>
