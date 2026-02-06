@@ -4,7 +4,11 @@
  * swap each method for fetch() (see comments).
  */
 
-const API_KEY = fetch("/js/key.json").then((res) => res.json().apikey)
+async function fetchKey() {
+    let key = await fetch("/js/key.json").then((res) => res.json());
+    return key.apikey;
+}
+
 const API_BASE_URL = 'http://localhost:8080/api';
 const STORAGE_KEY = 'happyplants_library';
 
@@ -12,7 +16,7 @@ const api = {
 
     async getPlantsPerPageAPI() {
         try {
-            const response = await fetch('https://perenual.com/api/v2/species-list?page=1&indoor=1&key=' + API_KEY)
+            const response = await fetch('https://perenual.com/api/v2/species-list?page=1&indoor=1&key=' + await fetchKey())
             var plants = await response.json();
             console.log(plants.data)
 
