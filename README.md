@@ -17,6 +17,12 @@ and extend the application as part of a system development course.
 - Ellen-Mae Lantz (MagiicalMae)
 - Erik Sjöberg (Er7k)
 
+## Instructions
+- Clone or download the project
+- Open the project from the folder HappyPlantsGrupp2 (the one containing the pom.xml file).
+- Ensure Maven dependencies are loaded: right‑click pom.xml and select Add as Maven Project if needed.
+- Run the application from PlantappApplication.java (PlantApp2/backend/plantapp/src/main/java/com/happyplants2/plantapp/PlantappApplication.java).
+- Open the web app in your browser at http://localhost:8080.
 
 ------------------------------------------------------
 # Original documentation

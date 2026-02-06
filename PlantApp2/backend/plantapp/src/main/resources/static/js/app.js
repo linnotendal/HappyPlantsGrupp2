@@ -24,6 +24,12 @@ function showSection(sectionName) {
 
 async function renderDiscoverSection() {
     const grid = document.getElementById('discover-grid');
+    grid.innerHTML = '<p>Loading...</p>';
+
+    const checks = await Promise.all(
+        HARDCODED_PLANTS.map(p => api.isInLibrary(p.id))
+    );
+
     grid.innerHTML = '';
 
     var plants = await api.getPlantsPerPageAPI();
@@ -39,8 +45,9 @@ async function renderDiscoverSection() {
         `;
     })
 
-    HARDCODED_PLANTS.forEach(plant => {
-        const inLibrary = api.isInLibrary(plant.id);
+    HARDCODED_PLANTS.forEach((plant, index) => {
+        const inLibrary = checks[index];
+
 
         grid.innerHTML += `
             <div class="plant-card">
@@ -58,10 +65,13 @@ async function renderDiscoverSection() {
     });
 }
 
-function renderLibrarySection() {
+async function renderLibrarySection() {
     const grid = document.getElementById('library-grid');
     const emptyMsg = document.getElementById('empty-library-msg');
-    const library = api.getLibrary();
+
+    grid.innerHTML = '<p>Loading...</p>';
+
+    const library = await api.getLibrary();
 
     grid.innerHTML = '';
 
@@ -76,7 +86,6 @@ function renderLibrarySection() {
         const needsWater = plant.needsWatering();
         const progress = plant.getProgress();
 
-        // Progress bar color
         let barColor = '#6b9c38';
         if (progress < 0.5)  barColor = '#e6a817';
         if (progress < 0.25) barColor = '#d44';
@@ -85,45 +94,85 @@ function renderLibrarySection() {
         if (needsWater) statusText = 'Needs water now!';
 
         grid.innerHTML += `
-            <div class="plant-card ${needsWater ? 'needs-water' : ''}">
-                <h3>${plant.name}</h3>
-                <p><strong>Species:</strong> ${plant.species}</p>
+<div class="plant-card ${needsWater ? 'needs-water' : ''}">
 
-                <div class="progress-container">
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: ${progress * 100}%; background-color: ${barColor};"></div>
-                    </div>
-                    <p class="water-status ${needsWater ? 'urgent' : ''}">${statusText}</p>
-                </div>
+    <div class="card-menu">
+        <button class="menu-btn" onclick="toggleMenu(event, ${plant.id})">⋮</button>
+        <div class="menu-dropdown" id="menu-${plant.id}">
+            <button onclick="editPlant(${plant.id})">Edit</button>
+            <button onclick="removeFromLibrary(${plant.id})">Remove</button>
+        </div>
+    </div>
 
-                <p class="last-watered">Last watered: ${plant.lastWatered ? new Date(plant.lastWatered).toLocaleDateString('en-US') : 'Never'}</p>
+    <h3>${plant.name}</h3>
+    <p><strong>Species:</strong> ${plant.species}</p>
 
-                <div class="card-btn-row">
-                    <button class="btn-water" onclick="waterPlant(${plant.id})">💧 Water</button>
-                    <button class="btn-remove" onclick="removeFromLibrary(${plant.id})">🗑️ Remove</button>
-                </div>
-            </div>
-        `;
+    <div class="progress-container">
+        <div class="progress-bar">
+            <div class="progress-fill"
+                 style="width:${progress * 100}%; background-color:${barColor};"></div>
+        </div>
+        <p class="water-status ${needsWater ? 'urgent' : ''}">
+            ${statusText}
+        </p>
+    </div>
+
+    <p class="last-watered">
+        Last watered:
+        ${plant.lastWatered
+            ? new Date(plant.lastWatered).toLocaleDateString('en-US')
+            : 'Never'}
+    </p>
+
+    <div class="card-btn-row">
+        <button class="btn-water" onclick="waterPlant(${plant.id})">💧 Water</button>
+    </div>
+
+</div>
+`;
     });
 }
 
-function addToLibrary(plantId) {
+function toggleMenu(e, id) {
+    e.stopPropagation()
+
+    document.querySelectorAll('.menu-dropdown')
+        .forEach(m => m.classList.remove('open'))
+
+    const menu = document.getElementById(`menu-${id}`)
+    menu.classList.toggle('open')
+}
+
+async function addToLibrary(plantId) {
     const source = HARDCODED_PLANTS.find(p => p.id === plantId);
     if (!source) return;
 
     const plant = new Plant(source.id, source.name, source.species, source.wateringIntervalDays);
-    api.addToLibrary(plant);
+    await api.addToLibrary(plant);
 
     renderDiscoverSection();
+    renderLibrarySection();
 }
 
-function removeFromLibrary(plantId) {
-    api.removeFromLibrary(plantId);
+async function removeFromLibrary(plantId) {
+    await api.removeFromLibrary(plantId);
     renderLibrarySection();
     renderDiscoverSection();
 }
 
-function waterPlant(plantId) {
-    api.waterPlant(plantId);
+async function waterPlant(plantId) {
+    await api.waterPlant(plantId);
     renderLibrarySection();
+}
+
+let gridActive = false
+
+function toggleGrid(section) {
+    const grid =
+        section === 'discover'
+            ? document.getElementById('discover-grid')
+            : document.getElementById('library-grid')
+
+    grid.classList.toggle('grid-view')
+    btn.textContent = gridActive ? 'List view' : 'Grid view'
 }
