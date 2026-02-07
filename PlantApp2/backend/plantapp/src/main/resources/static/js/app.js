@@ -33,22 +33,26 @@ async function renderDiscoverSection() {
 
     var plants = await api.getPlantsPerPageAPI();
 
-    plants.forEach(plant => {
-            grid.innerHTML += `
-            <div class="plant-card">
-            ${
-                (document.getElementById('discover-grid').classList.contains('grid-view'))
-                ? (plant.default_image != null)
-                    ? `<img src=${plant.default_image.regular_url} alt=${plant.common_name} style="border-radius:5px;">` 
-                    : `<div class="no-image"></div>`
-                : ''
-            }
-                <h3>${plant.common_name}</h3>
-                <p><strong>Species:</strong> ${plant.scientific_name[0]}</p>
-                <p><strong>Genus:</strong> ${plant.genus}</p>
-            </div>
-        `;
-    })
+    if (plants.status) {
+        grid.innerHTML = `<p>API Http response: ${plants.status}<p>`
+    } else {
+            plants.forEach(plant => {
+
+                grid.innerHTML += `
+                <div class="plant-card">
+                ${
+                    (document.getElementById('discover-grid').classList.contains('grid-view'))
+                    ? (plant.default_image != null)
+                        ? `<img src=${plant.default_image.regular_url} alt=${plant.common_name} style="border-radius:5px;">` 
+                        : `<div class="no-image"></div>`
+                    : ''
+                }
+                    <h3>${plant.common_name}</h3>
+                    <p><strong>Species:</strong> ${plant.scientific_name[0]}</p>
+                    <p><strong>Genus:</strong> ${plant.genus}</p>
+                </div>
+             `;
+    })}
 
     HARDCODED_PLANTS.forEach((plant, index) => {
         const inLibrary = checks[index];

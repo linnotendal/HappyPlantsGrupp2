@@ -15,16 +15,14 @@ const STORAGE_KEY = 'happyplants_library';
 const api = {
 
     async getPlantsPerPageAPI() {
-        try {
-            const response = await fetch('https://perenual.com/api/v2/species-list?page=1&indoor=1&key=' + await fetchKey())
-            var plants = await response.json();
-            console.log(plants.data)
+        const response = await fetch('https://perenual.com/api/v2/species-list?page=1&indoor=1&key=' + await fetchKey())
+        var plants = await response.json();
 
+        if (response.ok) {
             return plants.data;
-        } catch (error) {
-            console.log(error)
-
-            return null;
+        } else {
+            console.log(response);
+            return response;
         }
     },
 
