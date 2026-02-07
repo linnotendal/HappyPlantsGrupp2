@@ -133,6 +133,15 @@ h2 {
     border-left-color: #d44;
 }
 
+.no-image {
+    background-color: silver;
+    position: relative;
+    width: 20%;
+    height: 0;
+    padding-bottom: 20%;
+    border-radius: 5%;
+}
+
 /* buttons */
 .card-btn-row {
     display: flex;
