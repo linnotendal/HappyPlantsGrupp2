@@ -31,7 +31,9 @@ async function renderDiscoverSection() {
 
     grid.innerHTML = '';
 
-    var plants = await api.getPlantsPerPageAPI();
+    //Puts plants from API in discover section
+    /*
+    var plants = await api.getPlantsFromAPI();
 
     if (plants.status) {
         grid.innerHTML = `<p>API Http response: ${plants.status}<p>`
@@ -53,6 +55,7 @@ async function renderDiscoverSection() {
                 </div>
              `;
     })}
+    */
 
     HARDCODED_PLANTS.forEach((plant, index) => {
         const inLibrary = checks[index];
