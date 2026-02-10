@@ -14,8 +14,17 @@ public class UserService {
     private UserRepository userRepository;
 
     public User registerUser(String email, String username, String password) {
+        if (email==null || email.isBlank()) {
+            throw new IllegalArgumentException("Email is required");
+        }
         if (!email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
             throw new IllegalArgumentException("Invalid email format");
+        }
+        if (username==null || username.isBlank()) {
+            throw new IllegalArgumentException("Username is required");
+        }
+        if (password==null || password.isBlank()) {
+            throw new IllegalArgumentException("Password is required");
         }
         if(userRepository.existsByEmail(email)) {
             throw new IllegalArgumentException("Email already exists");
@@ -40,8 +49,12 @@ public class UserService {
         return Optional.ofNullable(userRepository.findByEmail(email));
     }
 
-    public void deleteUser(long userId) {
+    public boolean deleteUser(long userId) {
+        if(!userRepository.existsById(userId)) {
+            throw new IllegalArgumentException("User with this id is not found");
+        }
         userRepository.deleteById(userId);
+        return true;
     }
 
     public void logOutUser(HttpSession session) {
