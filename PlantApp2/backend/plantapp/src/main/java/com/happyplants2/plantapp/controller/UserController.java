@@ -10,31 +10,50 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/users")
 @CrossOrigin(origins = "*")
 
 public class UserController {
 
     @Autowired
-    UserService userService;
+    private UserService userService;
 
-    @PostMapping("/user/login")
-    public ResponseEntity<User> loginUser(@RequestBody User loginRequest, HttpSession session) {
+    @PostMapping("/login")
+    public ResponseEntity<?> loginUser(@RequestBody User loginRequest, HttpSession session) {
         try {
-            User user= userService.loginUser(loginRequest.getEmail(), loginRequest.getPassword());
-            session.setAttribute("user", user);
-            return ResponseEntity.ok(user);
+            User loggeduser= userService.loginUser(loginRequest.getEmail(), loginRequest.getPassword());
+            session.setAttribute("userId", loggeduser.getId());
+            return ResponseEntity.ok("Login successful");
         }catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(null);
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-    @PostMapping("/user/register")
-    public ResponseEntity<User> registerUser(@RequestBody User user) {
+    @PostMapping("/register")
+    public ResponseEntity<?> registerUser(@RequestBody User user) {
         try {
-            User registeredUser= new User(user.getEmail(), user.getUsername(), user.getPassword());
-            return ResponseEntity.ok(registeredUser);
+            User registeredUser= userService.registerUser(user.getEmail(), user.getUsername(), user.getPassword());
+            return ResponseEntity.ok("User registered successfully");
         }catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteUser(@PathVariable("id") long userId) {
+       try {
+           userService.deleteUser(userId);
+           return ResponseEntity.ok("User deleted successfully");
+       }catch (IllegalArgumentException e) {
+           return ResponseEntity.badRequest().body(e.getMessage());
+       }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logoutUser(HttpSession session) {
+       try{ userService.logOutUser(session);
+        return ResponseEntity.ok("User logout successfully");
+       }catch (IllegalArgumentException e) {
+           return ResponseEntity.badRequest().body(e.getMessage());
+       }
     }
 }

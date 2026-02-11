@@ -1,6 +1,5 @@
 package com.happyplants2.plantapp.model;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -8,7 +7,6 @@ import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
 class PlantTest {
 
     @Test
@@ -21,6 +19,14 @@ class PlantTest {
     void ProgressReturnsFullWhenRecentlyWatered(){
         Plant plant = new Plant("Rose","1", LocalDate.now(), 5,"img" );
         assertEquals(1, plant.getProgress());
+    }
+
+    @Test
+    void ProgressAtMidPoint(){
+        Plant plant = new Plant("Rose","1", LocalDate.now(), 6,"img" );
+        plant.setLastWatered(LocalDate.now().minusDays(3));
+
+        assertEquals(0.5, plant.getProgress(), 0.001);
     }
 
     @Test

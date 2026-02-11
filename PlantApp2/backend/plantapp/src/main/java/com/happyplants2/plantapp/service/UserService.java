@@ -4,6 +4,7 @@ import com.happyplants2.plantapp.model.User;
 import com.happyplants2.plantapp.repository.UserRepository;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -12,15 +13,27 @@ import java.util.Optional;
 public class UserService {
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     public User registerUser(String email, String username, String password) {
+        if (email==null || email.isBlank()) {
+            throw new IllegalArgumentException("Email is required");
+        }
         if (!email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
             throw new IllegalArgumentException("Invalid email format");
+        }
+        if (username==null || username.isBlank()) {
+            throw new IllegalArgumentException("Username is required");
+        }
+        if (password==null || password.isBlank()) {
+            throw new IllegalArgumentException("Password is required");
         }
         if(userRepository.existsByEmail(email)) {
             throw new IllegalArgumentException("Email already exists");
         }
-        User user= new User(email, username, password);
+        String hashedPassword= passwordEncoder.encode(password);
+        User user= new User(email, username, hashedPassword);
         userRepository.save(user);
         return user;
     }
@@ -30,7 +43,7 @@ public class UserService {
         if(user == null) {
             throw new IllegalArgumentException("User with this email is not found");
         }
-        if(!user.getPassword().equals(password)) {
+        if(!passwordEncoder.matches(password,user.getPassword())) {
             throw new IllegalArgumentException("Wrong password");
         }
         return user;
@@ -40,8 +53,12 @@ public class UserService {
         return Optional.ofNullable(userRepository.findByEmail(email));
     }
 
-    public void deleteUser(long userId) {
+    public boolean deleteUser(long userId) {
+        if(!userRepository.existsById(userId)) {
+            throw new IllegalArgumentException("User with this id is not found");
+        }
         userRepository.deleteById(userId);
+        return true;
     }
 
     public void logOutUser(HttpSession session) {
