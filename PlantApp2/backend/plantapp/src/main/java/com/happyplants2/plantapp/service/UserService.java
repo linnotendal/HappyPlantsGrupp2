@@ -4,6 +4,7 @@ import com.happyplants2.plantapp.model.User;
 import com.happyplants2.plantapp.repository.UserRepository;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -12,6 +13,8 @@ import java.util.Optional;
 public class UserService {
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     public User registerUser(String email, String username, String password) {
         if (email==null || email.isBlank()) {
@@ -29,7 +32,8 @@ public class UserService {
         if(userRepository.existsByEmail(email)) {
             throw new IllegalArgumentException("Email already exists");
         }
-        User user= new User(email, username, password);
+        String hashedPassword= passwordEncoder.encode(password);
+        User user= new User(email, username, hashedPassword);
         userRepository.save(user);
         return user;
     }
@@ -39,7 +43,7 @@ public class UserService {
         if(user == null) {
             throw new IllegalArgumentException("User with this email is not found");
         }
-        if(!user.getPassword().equals(password)) {
+        if(!passwordEncoder.matches(password,user.getPassword())) {
             throw new IllegalArgumentException("Wrong password");
         }
         return user;

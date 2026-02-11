@@ -55,6 +55,5 @@ public class UserController {
        }catch (IllegalArgumentException e) {
            return ResponseEntity.badRequest().body(e.getMessage());
        }
-
     }
 }
