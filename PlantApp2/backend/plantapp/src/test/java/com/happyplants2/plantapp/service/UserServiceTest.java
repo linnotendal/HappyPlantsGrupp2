@@ -26,7 +26,6 @@ class UserServiceTest {
     void registerUserWithValidInput() {
         String email = "test@test.com";
         when(userRepository.existsByEmail(email)).thenReturn(false);
-
         User result= userService.registerUser(email, "test", "test");
         assertNotNull(result);
         assertEquals(email, result.getEmail());
