@@ -8,5 +8,4 @@ package com.happyplants2.plantapp.service;
 
 public class LibraryService {
 
-
 }
