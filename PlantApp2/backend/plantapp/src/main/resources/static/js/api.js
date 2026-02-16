@@ -31,6 +31,32 @@ const api = {
         }
     },
     */
+    async searchPlantsFromBackend(query) {
+        try {
+            const response = await fetch(`http://localhost:8080/api/discover/search?name=${encodeURIComponent(query)}`);
+            if (!response.ok) throw new Error('Failed to connect with server');
+            return await response.json();
+        } catch (error) {
+            console.error('Error searching plants:', error);
+            return [];
+        }
+    },
+    async getPlantsFromAPI() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/discover`);
+            const data = await response.json();
+
+            if (response.ok) {
+                return data;
+            } else {
+                console.error("Server response fail", response.status);
+                return [];
+            }
+        } catch (error) {
+            console.error("Connection with backend failed", error);
+            return [];
+        }
+    },
 
     async getLibrary() {
         try {
@@ -42,7 +68,7 @@ const api = {
                 const plant = new Plant(
                     parseInt(p.plantId) || p.id,
                     p.nickname,
-                    'Unknown species',
+                    p.family,
                     p.waterFrequencyDays,
                     p.lastWatered
                 );

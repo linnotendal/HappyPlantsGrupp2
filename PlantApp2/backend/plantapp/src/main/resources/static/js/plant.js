@@ -1,10 +1,10 @@
  //Plant class - kept from old code, with small additions
 
  class Plant {
-     constructor(id, name, species, wateringIntervalDays, lastWatered = null) {
+     constructor(id, name, family, wateringIntervalDays, lastWatered = null) {
          this.id = id;
          this.name = name;
-         this.species = species;
+         this.species = family;
          this.wateringIntervalDays = wateringIntervalDays;
          this.lastWatered = lastWatered ? new Date(lastWatered) : null;
      }

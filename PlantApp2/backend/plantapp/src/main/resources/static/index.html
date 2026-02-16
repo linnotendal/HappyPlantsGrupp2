@@ -22,7 +22,10 @@
             <button class="btn-toggle-grid" onclick="toggleGrid('discover')">Toggle GridList</button>
             <h2>Discover Plants</h2>
             <p class="section-description">Find plants you like and add them to your library</p>
-            
+            <div class="search-box">
+                <input type="text" id="plant-search-input" placeholder="Search by plant name (e.g. Aloe)... " oninput="handleSearch()">
+                <button class="btn-search" oninput="handleSearch()">Search</button>
+            </div>
             <div id="discover-grid" class="plant-grid"></div>
         </section>
 

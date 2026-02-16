@@ -21,60 +21,85 @@ function showSection(sectionName) {
     }
 }
 
-async function renderDiscoverSection() {
+async function renderDiscoverSection(plants = null) {
     const grid = document.getElementById('discover-grid');
     grid.innerHTML = '<p>Loading...</p>';
 
-    const checks = await Promise.all(
-        HARDCODED_PLANTS.map(p => api.isInLibrary(p.id))
-    );
-
-    grid.innerHTML = '';
-
-    //Puts plants from API in discover section
-    /*
-    var plants = await api.getPlantsFromAPI();
-
-    if (plants.status) {
-        grid.innerHTML = `<p>API Http response: ${plants.status}<p>`
-    } else {
-            plants.forEach(plant => {
-
-                grid.innerHTML += `
-                <div class="plant-card">
-                ${
-                    (document.getElementById('discover-grid').classList.contains('grid-view'))
-                    ? (plant.default_image != null)
-                        ? `<img src=${plant.default_image.regular_url} alt=${plant.common_name} style="border-radius:5px;">` 
-                        : `<div class="no-image"></div>`
-                    : ''
-                }
-                    <h3>${plant.common_name}</h3>
-                    <p><strong>Species:</strong> ${plant.scientific_name[0]}</p>
-                    <p><strong>Genus:</strong> ${plant.genus}</p>
-                </div>
-             `;
-    })}
-    */
-
-    HARDCODED_PLANTS.forEach((plant, index) => {
-        const inLibrary = checks[index];
-
-
-        grid.innerHTML += `
-            <div class="plant-card">
-                <h3>${plant.name}</h3>
-                <p><strong>Species:</strong> ${plant.species}</p>
-                <p><strong>Watering:</strong> every ${plant.wateringIntervalDays} days</p>
-                <div class="card-btn-row">
-                    ${inLibrary
-            ? `<button class="btn-added" disabled>✓ Added</button>`
-            : `<button class="btn-add" onclick="addToLibrary(${plant.id})">+ Add to My Plants</button>`
+    try {
+        if (plants === null) {
+            plants = await api.getPlantsFromAPI();
         }
+        grid.innerHTML = '';
+        if (!plants || plants.length === 0) {
+            grid.innerHTML = '<p>No plants found.</p>';
+            return;
+        }
+        plants.forEach(plant => {
+            const safeName = plant.common_name.replace(/'/g, "\\'");
+            const safeSpecies = plant.scientific_name.replace(/'/g, "\\'");
+
+            grid.innerHTML += `
+                <div class="plant-card custom-layout">
+                    <h3 class="plant-title">${plant.common_name}</h3>
+                    <div class="plant-image-container">
+                        ${plant.default_image
+                ? `<img src="${plant.default_image}" alt="${plant.common_name}">`
+                : `<div class="no-image">🌿</div>`}
+                    </div>
+                    <div class="plant-details">
+                        <p><strong>Scientific:</strong><br>${plant.scientific_name}</p>
+                        <p><strong>Family:</strong><br>${plant.family || 'N/A'}</p>
+                        <p><strong>Water:</strong><br>${plant.watering || 'Normal'}</p>
+                    </div>
+                    <div class="card-btn-row">
+                        <button class="btn-add" onclick="handleAddFromDiscover(event, ${plant.id}, '${safeName}', '${safeSpecies}')">
+    +                   Add to My Plants
+                        </button>
+                    </div>
                 </div>
-            </div>
-        `;
-    });
+            `;
+        });
+    } catch (error) {
+        grid.innerHTML = '<p>Error loading plants from server.</p>';
+    }
+}
+async function handleSearch() {
+    const query = document.getElementById('plant-search-input').value.trim();
+    if (query==="") {
+        const allPlants = await api.getPlantsFromAPI();
+        renderDiscoverSection(allPlants);
+        return;
+    }
+    const plants = await api.searchPlantsFromBackend(query);
+    renderDiscoverSection(plants);
+}
+/**
+ * this Method adds a plant from discover section to user library
+ * @param event
+ * @param id
+ * @param name
+ * @param species
+ * @returns {Promise<void>}
+ */
+async function handleAddFromDiscover(event, id, name, species) {
+    const btn = event.currentTarget;
+    const originalText = btn.innerText;
+    btn.innerText = "Adding...";
+    btn.disabled = true;
+    try {
+        const newPlant = new Plant(id, name, species, 7);
+        await api.addToLibrary(newPlant);
+        btn.innerText = "✓ Added";
+        btn.classList.remove('btn-add');
+        btn.classList.add('btn-added');
+        renderLibrarySection();
+    }catch (error){
+        btn.innerText = originalText;
+        btn.disabled = false;
+        console.error("Error adding plant:", error);
+        alert("Failed to add plant. Please try again.");
+    }
+
 }
 
 async function renderLibrarySection() {
@@ -109,16 +134,15 @@ async function renderLibrarySection() {
 <div class="plant-card ${needsWater ? 'needs-water' : ''}">
 
     <div class="card-menu">
-        <button class="menu-btn" onclick="toggleMenu(event, ${plant.id})">⋮</button>
-        <div class="menu-dropdown" id="menu-${plant.id}">
-            <button onclick="editPlant(${plant.id})">Edit</button>
-            <button onclick="removeFromLibrary(${plant.id})">Remove</button>
+        <button class="menu-btn" onclick="toggleMenu(event, ${plant.backendId})">⋮</button>
+        <div class="menu-dropdown" id="menu-${plant.backendId}">
+            <button onclick="editPlant(${plant.backendId})">Edit</button>
+            <button onclick="removeFromLibrary(${plant.backendId})">Remove</button>
         </div>
     </div>
 
     <h3>${plant.name}</h3>
-    <p><strong>Species:</strong> ${plant.species}</p>
-
+        <p><strong>Family:</strong> ${plant.family || 'Unknown'}</p>    
     <div class="progress-container">
         <div class="progress-bar">
             <div class="progress-fill"
@@ -137,7 +161,7 @@ async function renderLibrarySection() {
     </p>
 
     <div class="card-btn-row">
-        <button class="btn-water" onclick="waterPlant(${plant.id})">💧 Water</button>
+        <button class="btn-water" onclick="waterPlant(${plant.backendId})">💧 Water</button>
     </div>
 
 </div>
@@ -146,13 +170,23 @@ async function renderLibrarySection() {
 }
 
 function toggleMenu(e, id) {
-    e.stopPropagation()
-
-    document.querySelectorAll('.menu-dropdown')
-        .forEach(m => m.classList.remove('open'))
+    if(e){
+        e.stopPropagation()
+        e.preventDefault();
+    }
+    console.log("Opening menu for plant ID:", id);
+    document.querySelectorAll('.menu-dropdown').forEach(m => {
+        if (m.id !== `menu-${id}`) m.classList.remove('open');
+    });
 
     const menu = document.getElementById(`menu-${id}`)
-    menu.classList.toggle('open')
+    if (menu) {
+        menu.classList.toggle('open');
+    } else {
+        console.error("DOM Element not found: ", `menu-${id}`);
+    }
+    console.log("Looking for:", `menu-${id}`);
+    console.log(document.getElementById(`menu-${id}`));
 }
 
 async function addToLibrary(plantId) {
@@ -166,14 +200,22 @@ async function addToLibrary(plantId) {
     renderLibrarySection();
 }
 
-async function removeFromLibrary(plantId) {
-    await api.removeFromLibrary(plantId);
+async function removeFromLibrary(backendId) {
+    try {
+        await fetch(`${API_BASE_URL}/library/${backendId}`, {
+            method: 'DELETE'
+        });
     renderLibrarySection();
     renderDiscoverSection();
+    } catch (error) {
+        console.error("Failed to remove plant:", error);
+    }
 }
 
-async function waterPlant(plantId) {
-    await api.waterPlant(plantId);
+async function waterPlant(backendId) {
+    await fetch(`${API_BASE_URL}/library/${backendId}/water`, {
+        method: 'PUT'
+    });
     renderLibrarySection();
 }
 
