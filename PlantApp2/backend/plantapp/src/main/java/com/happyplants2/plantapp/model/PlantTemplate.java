@@ -5,6 +5,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.criteria.CriteriaBuilder;
 
 @Entity
 @Table(name ="plants_general")
@@ -17,6 +18,9 @@ public class PlantTemplate {
     private String scientificName;
 
     private String watering;
+
+    private Integer waterFrequencyDays;
+
     private String family;
 
     @Column(length = 1000)
@@ -27,7 +31,7 @@ public class PlantTemplate {
     public PlantTemplate() {}
 
     public PlantTemplate(int id, String commonName, String scientificName, String family,
-                         String watering, String sunlight, String imageUrl) {
+                         String watering, String sunlight, String imageUrl, Integer waterFrequencyDays) {
         this.id = id;
         this.commonName = commonName;
         this.scientificName = scientificName;
@@ -35,10 +39,11 @@ public class PlantTemplate {
         this.watering = watering;
         this.sunlight = sunlight;
         this.imageUrl = imageUrl;
+        this.waterFrequencyDays = waterFrequencyDays;
     }
 
-    public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
+    public Integer getId() { return id; }
+    public void setId(Integer id) { this.id = id; }
 
     public String getCommonName() { return commonName; }
     public void setCommonName(String commonName) { this.commonName = commonName; }
@@ -54,4 +59,19 @@ public class PlantTemplate {
 
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+    public String getFamily() {
+        return family;
+    }
+
+    public void setFamily(String family) {
+        this.family = family;
+    }
+
+    public Integer getWaterFrequencyDays() {
+        return waterFrequencyDays;
+    }
+
+    public void setWaterFrequencyDays(Integer waterFrequencyDays) {
+        this.waterFrequencyDays = waterFrequencyDays;
+    }
 }
