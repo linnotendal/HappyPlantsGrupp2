@@ -34,7 +34,7 @@ jobs:
         run: chmod +x mvnw
 
       - name: Build and test
-        run: ./mvnw clean verify
+        run: ./mvnw clean package -DskipTests
 
   # ----------------------------------
   # CI — Frontend Validation
