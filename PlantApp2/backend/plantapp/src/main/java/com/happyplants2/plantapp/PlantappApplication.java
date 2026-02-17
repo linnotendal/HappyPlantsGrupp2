@@ -31,5 +31,5 @@ public class PlantappApplication {
                 System.out.println("Added 3 test plants");
             }
         };
-    }
+    } //testpush
 }
