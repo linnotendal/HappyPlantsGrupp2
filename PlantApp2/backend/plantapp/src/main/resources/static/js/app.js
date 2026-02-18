@@ -99,17 +99,15 @@ async function handleAddFromDiscover(event, id, name, species) {
         console.error("Error adding plant:", error);
         alert("Failed to add plant. Please try again.");
     }
-
 }
 
-async function renderLibrarySection() {
+async function renderLibrarySection(filteredPlants = null) {
     const grid = document.getElementById('library-grid');
     const emptyMsg = document.getElementById('empty-library-msg');
-
-    grid.innerHTML = '<p>Loading...</p>';
-
-    const library = await api.getLibrary();
-
+    if (filteredPlants==null){
+        grid.innerHTML = '<p>Loading...</p>';
+    }
+    const library = filteredPlants || await api.getLibrary();
     grid.innerHTML = '';
 
     if (library.length === 0) {
@@ -167,6 +165,33 @@ async function renderLibrarySection() {
 </div>
 `;
     });
+}
+async function handleLibrarySearch() {
+    const query = document.getElementById('library-search-input').value.toLowerCase().trim();
+    const allLibraryPlants = await api.getLibrary();
+    if (query === "") {
+        renderLibrarySection(allLibraryPlants);
+        return;
+    }
+    const filtered = allLibraryPlants.filter(plant => {
+        const nameMatch = plant.name.toLowerCase().includes(query);
+        const familyMatch = plant.family && plant.family.toLowerCase().includes(query);
+        return nameMatch || familyMatch;
+    });
+    renderLibrarySection(filtered);
+}
+async function handleSortChange() {
+    const sortBy = document.getElementById('sort-library-select').value;
+
+    let library = await api.getLibrary();
+
+    if (sortBy === 'water-status') {
+        library.sort((a, b) => a.getProgress() - b.getProgress());
+    }
+    else if (sortBy === 'name') {
+        library.sort((a, b) => a.name.localeCompare(b.name));
+    }
+    renderLibrarySection(library);
 }
 
 function toggleMenu(e, id) {

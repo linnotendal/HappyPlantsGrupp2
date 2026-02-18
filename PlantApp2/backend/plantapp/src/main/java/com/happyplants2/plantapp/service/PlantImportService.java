@@ -25,6 +25,7 @@ public class PlantImportService {
     @Autowired
     private RestTemplate restTemplate;
 
+
     public void importIndoorPlants(int limit) {
         String url = "https://perenual.com/api/species-list?key=" + apiKey + "&per_page=" + limit + "&indoor=true";
         try{
@@ -35,44 +36,37 @@ public class PlantImportService {
             for (PlantDto dto : response.getData()) {
                 //if(repository.existsById(dto.getId())) continue;
 
-                PlantDto details = getPlantDetails(dto.getId());
-                if (details!=null) {
-                    System.out.println("Successfully fetched details for: " + details.getCommonName());
-                    System.out.println("Sunlight data: " + details.getSunlight());
-                    Integer waterDays = extractWateringDays(details);
-                    PlantTemplate plant = new PlantTemplate();
-                    plant.setId(details.getId());
-                    plant.setCommonName(details.getCommonName());
-                    if (details.getScientificName() != null) {
-                        plant.setScientificName(String.join(", ", details.getScientificName()));
-                    }
-                    plant.setFamily(details.getFamily());
-                    plant.setWatering(details.getWatering());
-                    if (details.getSunlight() != null) {
-                        plant.setSunlight(String.join(", ", details.getSunlight()));
-                    }
-                    if (details.getDefaultImage() != null) {
-                        plant.setImageUrl(details.getDefaultImage().getOriginal_url());
-                    }
+                //PlantDto details = getPlantDetails(dto.getId());
 
-                    String sunlightString = "";
-                    if (details.getSunlight() != null && !details.getSunlight().isEmpty()) {
-                            sunlightString = String.join(", ", details.getSunlight());
-                        }
-                    plant.setSunlight(sunlightString);
-                    System.out.println("Plant ID: " + details.getId() + " Sunlight: " + details.getSunlight());
-                    plant.setWaterFrequencyDays(waterDays);
+                // System.out.println("Successfully fetched details for: " + details.getCommonName());
+                // System.out.println("Sunlight data: " + details.getSunlight());
 
-                    plants.add(plant);
+                PlantTemplate plant = new PlantTemplate();
+                plant.setId(plant.getId());
+                plant.setCommonName(plant.getCommonName());
+                if (plant.getScientificName() != null) {
+                    plant.setScientificName(String.join(", ", plant.getScientificName()));
                 }
-               /** PlantTemplate plant = new PlantTemplate(details.getId(),details.getCommonName(), details.getScientificName()!= null ? String.join(", ", details.getScientificName()) : null,
-                        details.getFamily(),
-                        details.getWatering(),
-                        details.getSunlight() != null ? String.join(", ", details.getSunlight()) : null,
-                        details.getDefaultImage() != null ? details.getDefaultImage().getOriginal_url() : null,
-                        waterDays
-                );*/
+                plant.setFamily(plant.getFamily());
+                plant.setWatering(plant.getWatering());
+                if (dto.getSunlight() != null) {
+                    plant.setSunlight(String.join(", ", plant.getSunlight()));
                 }
+                if (dto.getDefaultImage() != null) {
+                    plant.setImageUrl(dto.getDefaultImage().getOriginal_url());
+                }
+
+                String sunlightString = "";
+                if (dto.getSunlight() != null && !dto.getSunlight().isEmpty()) {
+                    sunlightString = String.join(", ", dto.getSunlight());
+                }
+                plant.setSunlight(sunlightString);
+                System.out.println("Plant ID: " + dto.getId() + " Sunlight: " + dto.getSunlight());
+                Integer waterDays = extractWateringDays(dto);
+                plant.setWaterFrequencyDays(waterDays);
+
+                plants.add(plant);
+            }
             repository.saveAll(plants);
         }catch (Exception e){
             e.printStackTrace();

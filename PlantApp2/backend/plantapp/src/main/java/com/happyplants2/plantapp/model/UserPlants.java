@@ -19,6 +19,7 @@ public class UserPlants {
     @ManyToOne
     @JoinColumn(name="plant_id", nullable=false)
     private Plant plant;
+
     private LocalDate lastWatered;
     private String nickName;
     private String location;
