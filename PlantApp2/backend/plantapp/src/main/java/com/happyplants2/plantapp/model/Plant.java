@@ -4,6 +4,10 @@ import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
+/**
+ * There is a possibility that this class will be removed later
+ * and replaced with userPlants and plantsTemplates
+ */
 @Entity
 @Table(name = "plants")
 public class Plant {

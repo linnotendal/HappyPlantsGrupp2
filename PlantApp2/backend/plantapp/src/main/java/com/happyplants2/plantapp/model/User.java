@@ -7,7 +7,7 @@ import jakarta.persistence.*;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long Id;
+    private Long Id;
     @Column(unique = true, nullable = false)
     private String email;
     @Column(nullable = false)
@@ -23,11 +23,11 @@ public class User {
         this.password = password;
     }
 
-    public long getId() {
+    public Long getId() {
         return Id;
     }
 
-    public void setId(long uniqueId) {
+    public void setId(Long uniqueId) {
         this.Id = uniqueId;
     }
 

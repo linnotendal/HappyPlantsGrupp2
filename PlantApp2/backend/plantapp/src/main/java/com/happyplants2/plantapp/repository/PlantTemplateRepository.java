@@ -7,5 +7,4 @@ import java.util.List;
 
 public interface PlantTemplateRepository extends JpaRepository<PlantTemplate, Integer> {
     List<PlantTemplate> findByCommonNameContainingIgnoreCase(String name);
-    List<PlantTemplate> findByScientificNameContainingIgnoreCase(String name);
 }

@@ -1,13 +1,17 @@
 package com.happyplants2.plantapp.controller;
 
 
+import com.happyplants2.plantapp.DTO.UserPlantsResponseDTO;
 import com.happyplants2.plantapp.model.User;
+import com.happyplants2.plantapp.service.LibraryService;
 import com.happyplants2.plantapp.service.UserService;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users")
@@ -17,21 +21,28 @@ public class UserController {
 
     @Autowired
     private UserService userService;
-
+    @Autowired
+    private LibraryService libraryService;
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@RequestBody User loginRequest, HttpSession session) {
         try {
-            User loggeduser= userService.loginUser(loginRequest.getEmail(), loginRequest.getPassword());
-            session.setAttribute("userId", loggeduser.getId());
-            return ResponseEntity.ok("Login successful");
+            User loggedUser= userService.loginUser(loginRequest.getEmail(), loginRequest.getPassword());
+            session.setAttribute("userId", loggedUser.getId());
+            List<UserPlantsResponseDTO> plants = libraryService.getUserPlants(loggedUser.getId());
+
+            return ResponseEntity.ok(Map.of(
+                    "user", loggedUser,
+                    "plants", plants
+            ));
         }catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody User user) {
         try {
-            User registeredUser= userService.registerUser(user.getEmail(), user.getUsername(), user.getPassword());
+            userService.registerUser(user.getEmail(), user.getUsername(), user.getPassword());
             return ResponseEntity.ok("User registered successfully");
         }catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());

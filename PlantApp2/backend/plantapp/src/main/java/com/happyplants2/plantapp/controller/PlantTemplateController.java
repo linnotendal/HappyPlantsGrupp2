@@ -9,6 +9,7 @@ import java.util.List;
 
 /**
  * Responsible for Discover library
+ * Gets All plants stored in the database and returns them to the frontend
  */
 @RestController
 @RequestMapping("/api")
@@ -16,6 +17,7 @@ import java.util.List;
 public class PlantTemplateController {
     @Autowired
     private DiscoverService service;
+
     @GetMapping("/discover/search")
     public List<PlantResponseDTO> searchPlants(@RequestParam String name) {
         return service.search(name);
