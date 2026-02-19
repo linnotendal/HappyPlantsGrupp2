@@ -24,9 +24,15 @@ public class DiscoverService {
         return plantTemplateRepository.
                 findByCommonNameContainingIgnoreCase(plantName).stream().map(this::convertToDto).toList();
     }
-    public PlantResponseDTO convertToDto (PlantTemplate plantTemplate) {
+    private PlantResponseDTO convertToDto (PlantTemplate plantTemplate) {
         return new PlantResponseDTO(plantTemplate.getId(),plantTemplate.getCommonName(),
                 plantTemplate.getScientificName(), plantTemplate.getFamily(), plantTemplate.getWatering(),
                 plantTemplate.getSunlight(), plantTemplate.getImageUrl());
+    }
+    public List<PlantResponseDTO> getAllPlants() {
+        return plantTemplateRepository.findAll()
+                .stream()
+                .map(this::convertToDto)
+                .toList();
     }
 }

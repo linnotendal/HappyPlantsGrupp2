@@ -3,7 +3,7 @@ package com.happyplants2.plantapp.DTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class PlantResponseDTO {
-    private int id;
+    private Integer id;
 
     @JsonProperty("common_name")
     private String commonName;

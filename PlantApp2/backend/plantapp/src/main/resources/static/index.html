@@ -22,7 +22,10 @@
             <button class="btn-toggle-grid" onclick="toggleGrid('discover')">Toggle GridList</button>
             <h2>Discover Plants</h2>
             <p class="section-description">Find plants you like and add them to your library</p>
-            
+            <div class="search-box">
+                <input type="text" id="plant-search-input" placeholder="Search by plant name (e.g. Aloe)... " oninput="handleSearch()">
+                <button class="btn-search" oninput="handleSearch()">Search</button>
+            </div>
             <div id="discover-grid" class="plant-grid"></div>
         </section>
 
@@ -30,7 +33,20 @@
         <section id="library-section" class="hidden">
             <button class="btn-toggle-grid" onclick="toggleGrid('library')">Toggle GridList</button>
             <h2>My Plants</h2>
-            
+            <div class="search-box">
+                <input type="text" id="library-search-input"
+                       placeholder="Search in my plants..."
+                       oninput="handleLibrarySearch()">
+            </div>
+
+            <div class="library-controls">
+                <select id="sort-library-select" onchange="handleSortChange()">
+                    <option value="default">Default (Added date)</option>
+                    <option value="water-status">Thirstiest First 💧</option>
+                    <option value="name">Name (A-Z)</option>
+                </select>
+            </div>
+
             <div id="library-grid" class="plant-grid"></div>
             <p id="empty-library-msg" class="empty-message">
                 You have no plants yet. Go to <strong>Discover</strong> to add some! 🌿

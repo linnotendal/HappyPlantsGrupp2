@@ -19,6 +19,7 @@ public class PlantTemplate {
 
     private String watering;
 
+    @Column(nullable = false)
     private Integer waterFrequencyDays;
 
     private String family;

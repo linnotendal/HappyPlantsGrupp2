@@ -7,7 +7,7 @@ import java.time.temporal.ChronoUnit;
 
 @Entity
 @Table(name= "user_plants")
-public class UserPlants {
+public class UserPlant {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -18,14 +18,16 @@ public class UserPlants {
 
     @ManyToOne
     @JoinColumn(name="plant_id", nullable=false)
-    private Plant plant;
+    private PlantTemplate plant;
+
+    @Column(name= "last_watered")
     private LocalDate lastWatered;
     private String nickName;
     private String location;
 
 
-    public UserPlants() {}
-    public UserPlants(User user, Plant plant, LocalDate lastWatered) {
+    public UserPlant() {}
+    public UserPlant(User user, PlantTemplate plant, LocalDate lastWatered) {
         this.user = user;
         this.plant = plant;
         this.lastWatered = lastWatered;
@@ -37,11 +39,11 @@ public class UserPlants {
     public Long getId() {
         return id;
     }
-    public Plant getPlant() {
+    public PlantTemplate getPlant() {
         return plant;
     }
 
-    public void setPlant(Plant plant) {
+    public void setPlant(PlantTemplate plant) {
         this.plant = plant;
     }
 
