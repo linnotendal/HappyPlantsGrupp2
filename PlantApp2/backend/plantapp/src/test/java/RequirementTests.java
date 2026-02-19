@@ -1,12 +1,26 @@
+import com.happyplants2.plantapp.controller.PlantController;
+import com.happyplants2.plantapp.controller.UserController;
+import com.happyplants2.plantapp.model.Plant;
+import com.happyplants2.plantapp.repository.PlantRepository;
 import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
 public class RequirementTests {
+    private PlantController controller;
+    private UserController userController;
+    private List<Plant> repository = new ArrayList<Plant>();
 
+    @BeforeEach
     public void setUp() {
-
+        controller = new PlantController();
+        userController = new UserController();
     }
 
 
@@ -68,6 +82,11 @@ public class RequirementTests {
  A user shall be able to add a plant to their library.
  */
     public void testBIB01F_shouldAddPlantToLibrary() {
+        //TODO måste fixa den här så att den kollar ett riktigt repository.
+        setUp();
+        Plant testPlant = new Plant("Planticus Maximus", "1337", LocalDate.now(), 1, "");
+        repository.add(testPlant);
+        assertEquals(1, repository.size());
     }
 
     @Test
