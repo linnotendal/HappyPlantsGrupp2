@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 
 @RestController
@@ -23,7 +24,10 @@ public class PlantController {
      */
     @GetMapping("/library")
     public List<Plant> getLibrary() {
-        return plantRepository.findAll();
+        return plantRepository.findAll()
+                .stream()
+                .sorted(Comparator.comparingInt(Plant::getDaysUntilWater)) //Returns plants based on days until water.
+                .toList();
     }
 
     /**
