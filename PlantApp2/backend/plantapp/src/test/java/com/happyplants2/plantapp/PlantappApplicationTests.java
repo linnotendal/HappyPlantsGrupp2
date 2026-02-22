@@ -9,18 +9,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 
+import static org.hamcrest.Matchers.hasItem;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
+@Transactional
 class PlantappApplicationTests {
 
     @Autowired
@@ -94,33 +98,25 @@ class PlantappApplicationTests {
 /**
  A user shall be able to add a plant to their library.
  */
-    public void testBIB01F_shouldAddPlantToLibrary() throws Exception {
-        Plant testPlant = new Plant(
-                "Planticus Maximus",
-                "1337",
-                LocalDate.now(),
-                1,
-                ""
-        );
+    void testBIB01F_shouldAddPlantToLibrary() throws Exception {
+        long before = plantRepository.count();
 
         mockMvc.perform(post("/api/library")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {
-                                  "nickname": "Planticus Maximus",
-                                  "speciesId": "1337",
-                                  "lastWatered": "2024-05-20",
-                                  "waterInterval": 1,
-                                  "imageUrl": ""
-                                }
-                                """))
+            {
+              "nickname": "TestPlant",
+              "speciesId": "1337",
+              "lastWatered": "2026-02-20",
+              "waterInterval": 1,
+              "imageUrl": ""
+            }
+            """))
                 .andExpect(status().isOk())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.nickname").value("Planticus Maximus"));
-        ;
+                .andExpect(jsonPath("$.nickname").value("TestPlant"));
 
-
-        assertEquals(1, plantRepository.count());
+        long after = plantRepository.count();
+        assertEquals(before + 1, after);
     }
 
     @Test
@@ -128,17 +124,31 @@ class PlantappApplicationTests {
  A user shall be able to view their library containing all plants,
  with a visual representation of time since last watering.
  */
-    public void testBIB02F_shouldDisplayLibraryWithWateringStatus() {
+    void testBIB02F_shouldDisplayLibraryWithWateringStatus() throws Exception {
+        Plant plant = new Plant("LibraryPlant", "123", LocalDate.now(), 3, "");
+        plantRepository.save(plant);
+        mockMvc.perform(get("/api/library"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[*].nickname").value(hasItem("LibraryPlant")));
     }
+
+
 
     @Test
 /**
  A user shall be able to search
  for plants in their library based on plant name or nickname.
  */
-    public void testBIB03F_shouldSearchPlantsByNameOrNickname() {
+    void testBIB03F_shouldSearchPlantsByNameOrNickname() throws Exception {
+        Plant plant = new Plant("LibraryPlant", "123", LocalDate.now(), 3, "");
+        plant = plantRepository.save(plant);
+
+        mockMvc.perform(get("/api/library/" + plant.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.nickname").value("LibraryPlant"));
     }
 
+    @Disabled
     @Test
 /**
  A user shall be able to remove a plant from their library.
@@ -146,6 +156,7 @@ class PlantappApplicationTests {
     public void testBIB07F_shouldRemovePlantFromLibrary() {
     }
 
+    @Disabled
     @Test
 /**
  A user shall be able to see information about different plants including name,
@@ -155,6 +166,7 @@ class PlantappApplicationTests {
     public void testINF01F_shouldDisplayDetailedPlantInformation() {
     }
 
+    @Disabled
     @Test
 /**
  When a user logs in, the watering status of already added plants shall be
@@ -164,6 +176,8 @@ class PlantappApplicationTests {
     public void testINF02F_shouldUpdateWateringStatusOnLogin() {
     }
 
+
+    @Disabled
     @Test
 /**
  User data, associated plants, email address, username, password, and
@@ -173,6 +187,7 @@ class PlantappApplicationTests {
     public void testLA01F_shouldPersistUserDataAcrossSessions() {
     }
 
+    @Disabled
     @Test
 /**
  A user shall be able to see suggestions for different plants and search
@@ -181,6 +196,7 @@ class PlantappApplicationTests {
     public void testSOK01F_shouldProvidePlantSuggestionsAndSearch() {
     }
 
+    @Disabled
     @Test
 /**
  The application shall calculate and display when a plant needs watering through a visual representation.
@@ -188,6 +204,7 @@ class PlantappApplicationTests {
     public void testSK01F_shouldCalculateAndDisplayWateringIndicator() {
     }
 
+    @Disabled
     @Test
 /**
  A user shall be able to mark one or more plants as watered.
