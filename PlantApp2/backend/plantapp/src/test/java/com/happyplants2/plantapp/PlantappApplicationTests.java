@@ -95,8 +95,6 @@ class PlantappApplicationTests {
  A user shall be able to add a plant to their library.
  */
     public void testBIB01F_shouldAddPlantToLibrary() throws Exception {
-        plantRepository.deleteAll();
-
         Plant testPlant = new Plant(
                 "Planticus Maximus",
                 "1337",
