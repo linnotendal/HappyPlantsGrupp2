@@ -34,7 +34,7 @@ jobs:
         run: chmod +x mvnw
 
       - name: Build and test
-        run: ./mvnw clean package -DskipTests //TA BORT SKIPTESTS SEN. VI SKA KÖRA PlantapplicationTests här.
+        run: ./mvnw clean package -DskipTests #TA BORT SKIPTESTS SEN. VI SKA KÖRA PlantapplicationTests här.
 
   # ----------------------------------
   # CI — Frontend Validation
