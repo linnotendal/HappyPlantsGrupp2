@@ -35,4 +35,10 @@ public class DiscoverService {
                 .map(this::convertToDto)
                 .toList();
     }
+    public PlantResponseDTO getPlantById(Integer id) {
+        PlantTemplate plantTemplate = plantTemplateRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Plant not found with id: " + id));
+
+        return convertToDto(plantTemplate);
+    }
 }

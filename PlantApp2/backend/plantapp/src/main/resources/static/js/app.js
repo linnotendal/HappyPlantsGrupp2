@@ -40,7 +40,8 @@ async function renderDiscoverSection(plants = null) {
 
             grid.innerHTML += `
                 <div class="plant-card custom-layout">
-                    <h3 class="plant-title">${plant.common_name}</h3>
+                <h3 class="plant-title plant-link" onclick="openPlantInfo(${plant.id})">
+                    ${plant.common_name} </h3>                    
                     <div class="plant-image-container">
                         ${plant.default_image
                 ? `<img src="${plant.default_image}" alt="${plant.common_name}">`
@@ -254,4 +255,8 @@ function toggleGrid(section) {
 
     grid.classList.toggle('grid-view');
     (section =='discover') ? renderDiscoverSection() : renderLibrarySection();
+}
+
+function openPlantInfo(id) {
+    window.location.href = `information.html?id=${id}`;
 }

@@ -2,10 +2,7 @@ package com.happyplants2.plantapp.controller;
 
 import com.happyplants2.plantapp.service.PlantImportService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * Temporary class only to test getting information from the API and saving them to the database
@@ -25,4 +22,10 @@ public class PlantImportController {
         importService.importIndoorPlants(100);
         return "Indoor plants import started!";
     }
+
+   @GetMapping("/import/{id}")
+   public String importOne(@PathVariable Integer id) {
+       importService.importSinglePlant(id);
+       return "Plant " + id + " imported successfully!";
+   }
 }

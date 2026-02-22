@@ -6,10 +6,13 @@ import com.happyplants2.plantapp.model.PlantTemplate;
 import com.happyplants2.plantapp.repository.PlantTemplateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -18,14 +21,26 @@ import java.util.List;
  */
 @Service
 public class PlantImportService {
-    @Value("${perenual.api.key}")
+    @Value("${perenual.api.key} ")
     private String apiKey;
     @Autowired
     private PlantTemplateRepository repository;
     @Autowired
     private RestTemplate restTemplate;
 
-
+    /**
+     * Calls The API to fill the database with general information
+     * If the database has data already, The API will not be called
+     */
+    @EventListener(ApplicationReadyEvent.class)
+    public void runImportOnStartup() {
+        if (repository.count() > 10) {
+            System.out.println("API will not be called, the database has data");
+            return;
+        }
+        System.out.println("application started, loading plants from API has started");
+        importIndoorPlants(40);
+    }
     public void importIndoorPlants(int limit) {
         String url = "https://perenual.com/api/species-list?key=" + apiKey + "&per_page=" + limit + "&indoor=true";
         try{
@@ -34,23 +49,16 @@ public class PlantImportService {
             List<PlantTemplate> plants = new ArrayList<>();
 
             for (PlantDto dto : response.getData()) {
-                //if(repository.existsById(dto.getId())) continue;
-
-                //PlantDto details = getPlantDetails(dto.getId());
-
-                // System.out.println("Successfully fetched details for: " + details.getCommonName());
-                // System.out.println("Sunlight data: " + details.getSunlight());
-
                 PlantTemplate plant = new PlantTemplate();
-                plant.setId(plant.getId());
-                plant.setCommonName(plant.getCommonName());
-                if (plant.getScientificName() != null) {
-                    plant.setScientificName(String.join(", ", plant.getScientificName()));
+                plant.setId(dto.getId());
+                plant.setCommonName(dto.getCommonName());
+                if (dto.getScientificName() != null && !dto.getScientificName().isEmpty()) {
+                    plant.setScientificName(String.join(", ", dto.getScientificName()));
                 }
-                plant.setFamily(plant.getFamily());
-                plant.setWatering(plant.getWatering());
+                plant.setFamily(dto.getFamily());
+                plant.setWatering(dto.getWatering());
                 if (dto.getSunlight() != null) {
-                    plant.setSunlight(String.join(", ", plant.getSunlight()));
+                    plant.setSunlight(String.join(", ", dto.getSunlight()));
                 }
                 if (dto.getDefaultImage() != null) {
                     plant.setImageUrl(dto.getDefaultImage().getOriginal_url());
@@ -61,10 +69,12 @@ public class PlantImportService {
                     sunlightString = String.join(", ", dto.getSunlight());
                 }
                 plant.setSunlight(sunlightString);
-                System.out.println("Plant ID: " + dto.getId() + " Sunlight: " + dto.getSunlight());
                 Integer waterDays = extractWateringDays(dto);
-                plant.setWaterFrequencyDays(waterDays);
 
+                if (waterDays == null) {
+                    waterDays = 7;
+                }
+                plant.setWaterFrequencyDays(waterDays);
                 plants.add(plant);
             }
             repository.saveAll(plants);
@@ -72,13 +82,46 @@ public class PlantImportService {
             e.printStackTrace();
         }
     }
-    private PlantDto getPlantDetails(Integer id) {
+    public PlantDto getPlantDetails(Integer id) {
         String detailUrl = "https://perenual.com/api/species/details/"
                 + id + "?key=" + apiKey;
         String rawJson = restTemplate.getForObject(detailUrl, String.class);
         System.out.println("Raw JSON for ID " + id + ": " + rawJson);
         System.out.println("Fetching details from: " + detailUrl);
         return restTemplate.getForObject(detailUrl, PlantDto.class);
+    }
+
+    public void importSinglePlant(Integer id){
+        try{PlantDto plantDto = getPlantDetails(id);
+        if(plantDto != null){
+            PlantTemplate plantTemplate= new PlantTemplate();
+            plantTemplate.setId(plantDto.getId());
+            plantTemplate.setCommonName(plantDto.getCommonName());
+            plantTemplate.setFamily(plantDto.getFamily());
+            plantTemplate.setWatering(plantDto.getWatering());
+            if (plantDto.getScientificName() != null && !plantDto.getScientificName().isEmpty()) {
+                plantTemplate.setScientificName(String.join(", ", plantDto.getScientificName()));
+            }
+
+            if (plantDto.getSunlight() != null && !plantDto.getSunlight().isEmpty()) {
+                plantTemplate.setSunlight(String.join(", ", plantDto.getSunlight()));
+            }
+
+            if (plantDto.getDefaultImage() != null) {
+                plantTemplate.setImageUrl(plantDto.getDefaultImage().getOriginal_url());
+            }
+            if (plantDto.getSunlight() != null && !plantDto.getSunlight().isEmpty()) {
+                plantTemplate.setSunlight(String.join(", ", plantTemplate.getSunlight()));
+            }
+            Integer waterDays = extractWateringDays(plantDto);
+            plantTemplate.setWaterFrequencyDays(waterDays != null ? waterDays : 7);
+            repository.save(plantTemplate);
+            System.out.println("Successfully saved plant: " + plantDto.getCommonName());
+
+        }}catch (Exception e){
+            System.err.println("Error importing plant ID " + id + ": " + e.getMessage());
+            e.printStackTrace();
+        }
     }
     private Integer extractWateringDays(PlantDto details) {
         if (details.getWateringGeneralBenchmark() == null)

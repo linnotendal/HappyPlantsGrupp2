@@ -57,6 +57,14 @@ const api = {
             return [];
         }
     },
+    async getPlantById(id) {
+        const response = await fetch(`${API_BASE_URL}/discover/${id}`);
+
+        if (!response.ok) {
+            throw new Error("Plant not found");
+        }
+        return await response.json();
+    },
 
     async getLibrary() {
         try {
