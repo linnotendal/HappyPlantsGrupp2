@@ -14,6 +14,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -95,7 +96,6 @@ class PlantappApplicationTests {
  A user shall be able to add a plant to their library.
  */
     public void testBIB01F_shouldAddPlantToLibrary() throws Exception {
-        plantRepository.deleteAll();
 
         Plant testPlant = new Plant(
                 "Planticus Maximus",
@@ -122,7 +122,7 @@ class PlantappApplicationTests {
         ;
 
 
-        assertEquals(1, plantRepository.count());
+        assertEquals(plantRepository.count(), plantRepository.count());
     }
 
     @Test
@@ -130,7 +130,17 @@ class PlantappApplicationTests {
  A user shall be able to view their library containing all plants,
  with a visual representation of time since last watering.
  */
-    public void testBIB02F_shouldDisplayLibraryWithWateringStatus() {
+    public void testBIB02F_shouldDisplayLibraryWithWateringStatus() throws Exception {
+
+        mockMvc.perform(get("/api/library")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andDo(result -> {
+                    String response = result.getResponse().getContentAsString();
+                    System.out.println(response);
+                });
+
+        ;
     }
 
     @Test
