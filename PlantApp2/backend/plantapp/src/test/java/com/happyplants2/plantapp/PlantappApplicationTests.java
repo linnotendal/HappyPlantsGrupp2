@@ -1,14 +1,18 @@
 package com.happyplants2.plantapp;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.happyplants2.plantapp.controller.UserController;
 import com.happyplants2.plantapp.model.Plant;
+import com.happyplants2.plantapp.model.User;
 import com.happyplants2.plantapp.repository.PlantRepository;
+import com.happyplants2.plantapp.repository.UserRepository;
+import com.happyplants2.plantapp.service.UserService;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +21,7 @@ import java.time.LocalDate;
 
 import static org.hamcrest.Matchers.hasItem;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -34,21 +39,39 @@ class PlantappApplicationTests {
     private PlantRepository plantRepository;
 
     @Autowired
-    private ObjectMapper objectMapper;
+    private UserService userService;
 
+    @Autowired
+    PasswordEncoder passwordEncoder;
 
     @Test
     void contextLoads() {
     }
-
-    @Disabled("ANV01F not implemented yet")
+    
     @Test
 /**
  A user shall be able to log in by entering
  their email address and password.
  */
-    public void testANV01F_shouldLoginWithValidEmailAndPassword() {
+    public void testANV01F_shouldLoginWithValidEmailAndPassword() throws Exception {
+        userService.registerUser("test@test.com", "testuser", "123456");
+
+
+        String loginJson = """
+        {
+            "email": "test@test.com",
+            "password": "123456"
+        }
+        """;
+
+        mockMvc.perform(post("/api/users/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginJson))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.user.email").value("test@test.com"))
+                .andExpect(jsonPath("$.plants").isArray());
     }
+
 
     @Disabled("ANV02F not implemented yet")
     @Test
@@ -58,13 +81,26 @@ class PlantappApplicationTests {
     public void testANV02F_shouldLogoutUserSuccessfully() {
     }
 
-    @Disabled("ANV03F not implemented yet")
+   //@Disabled("ANV03F not implemented yet")
     @Test
 /**
  A user shall be able to create a new account by
  entering their email address, name, and password.
  */
-    public void testANV03F_shouldCreateAccountWithValidInput() {
+    public void testANV03F_shouldCreateAccountWithValidInput() throws Exception {
+        String json = """
+        {
+            "email": "test@test.com",
+            "username": "testuser",
+            "password": "123456"
+        }
+        """;
+
+        mockMvc.perform(post("/api/users/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isOk())
+                .andExpect(content().string("User registered successfully"));
     }
 
     @Disabled("ANV05F not implemented yet")
@@ -148,25 +184,48 @@ class PlantappApplicationTests {
                 .andExpect(jsonPath("$.nickname").value("LibraryPlant"));
     }
 
-    @Disabled
+
     @Test
 /**
  A user shall be able to remove a plant from their library.
  */
-    public void testBIB07F_shouldRemovePlantFromLibrary() {
+    public void testBIB07F_shouldRemovePlantFromLibrary() throws Exception {
+        Plant plant = new Plant("LibraryPlant", "123", LocalDate.now(), 3, "");
+        plant = plantRepository.save(plant);
+
+        mockMvc.perform(delete("/api/library/" + plant.getId()))
+                .andExpect(status().isOk());
+
+        assertFalse(plantRepository.existsById(plant.getId()));
     }
 
-    @Disabled
+
     @Test
 /**
  A user shall be able to see information about different plants including name,
  scientific name, family name, water needs, sunlight requirements, hardiness zones,
  and care level.
  */
-    public void testINF01F_shouldDisplayDetailedPlantInformation() {
+    public void testINF01F_shouldDisplayDetailedPlantInformation() throws Exception {
+        Plant plant = new Plant(
+                "MyPlant",
+                "PL123",
+                LocalDate.now(),
+                5,
+                "image.jpg"
+        );
+
+        plant = plantRepository.save(plant);
+
+        mockMvc.perform(get("/api/library/" + plant.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.nickname").value("MyPlant"))
+                .andExpect(jsonPath("$.plantId").value("PL123"))
+                .andExpect(jsonPath("$.waterFrequencyDays").value(5))
+                .andExpect(jsonPath("$.imageURL").value("image.jpg"));
     }
 
-    @Disabled
+    @Disabled("Not implemented yet")
     @Test
 /**
  When a user logs in, the watering status of already added plants shall be
@@ -177,7 +236,7 @@ class PlantappApplicationTests {
     }
 
 
-    @Disabled
+    @Disabled("not implemented yet")
     @Test
 /**
  User data, associated plants, email address, username, password, and
@@ -187,7 +246,7 @@ class PlantappApplicationTests {
     public void testLA01F_shouldPersistUserDataAcrossSessions() {
     }
 
-    @Disabled
+    @Disabled("Not implemented yet")
     @Test
 /**
  A user shall be able to see suggestions for different plants and search
@@ -196,7 +255,7 @@ class PlantappApplicationTests {
     public void testSOK01F_shouldProvidePlantSuggestionsAndSearch() {
     }
 
-    @Disabled
+    @Disabled("should probably be checked in frontend?")
     @Test
 /**
  The application shall calculate and display when a plant needs watering through a visual representation.
@@ -204,12 +263,17 @@ class PlantappApplicationTests {
     public void testSK01F_shouldCalculateAndDisplayWateringIndicator() {
     }
 
-    @Disabled
     @Test
 /**
  A user shall be able to mark one or more plants as watered.
  */
-    public void testSK02F_shouldAllowUserToMarkPlantsAsWatered() {
+    public void testSK02F_shouldAllowUserToMarkPlantsAsWatered() throws Exception {
+        Plant plant = new Plant("LibraryPlant", "123", LocalDate.now(), 3, "");
+        plant = plantRepository.save(plant);
+
+        mockMvc.perform(put("/api/library/" + plant.getId()+"/water"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.lastWatered").value(LocalDate.now().toString()));
     }
 
 
