@@ -32,6 +32,7 @@ class PlantappApplicationTests {
     /** Den här testklassen provar API-calls genom att använda mockmvc.
      * Transactional betyder att det görs en rollback efter testen är klara.
      * DVS ska inget sparas i databaserna.
+     * 
     */
     @Autowired
     private MockMvc mockMvc;
