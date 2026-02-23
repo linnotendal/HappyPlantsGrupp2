@@ -1,18 +1,15 @@
 package com.happyplants2.plantapp;
 
-import com.happyplants2.plantapp.controller.UserController;
 import com.happyplants2.plantapp.model.Plant;
-import com.happyplants2.plantapp.model.User;
 import com.happyplants2.plantapp.repository.PlantRepository;
-import com.happyplants2.plantapp.repository.UserRepository;
 import com.happyplants2.plantapp.service.UserService;
+
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,7 +28,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 @Transactional
 class PlantappApplicationTests {
-
+//TODO We need to check the class MyPLantsLibraryController också, den används inte i tests just nu.
+    /** Den här testklassen provar API-calls genom att använda mockmvc.
+     * Transactional betyder att det görs en rollback efter testen är klara.
+     * DVS ska inget sparas i databaserna.
+    */
     @Autowired
     private MockMvc mockMvc;
 
@@ -41,13 +42,10 @@ class PlantappApplicationTests {
     @Autowired
     private UserService userService;
 
-    @Autowired
-    PasswordEncoder passwordEncoder;
-
     @Test
     void contextLoads() {
     }
-    
+
     @Test
 /**
  A user shall be able to log in by entering
@@ -55,14 +53,12 @@ class PlantappApplicationTests {
  */
     public void testANV01F_shouldLoginWithValidEmailAndPassword() throws Exception {
         userService.registerUser("test@test.com", "testuser", "123456");
-
-
         String loginJson = """
-        {
-            "email": "test@test.com",
-            "password": "123456"
-        }
-        """;
+                {
+                    "email": "test@test.com",
+                    "password": "123456"
+                }
+                """;
 
         mockMvc.perform(post("/api/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -81,7 +77,7 @@ class PlantappApplicationTests {
     public void testANV02F_shouldLogoutUserSuccessfully() {
     }
 
-   //@Disabled("ANV03F not implemented yet")
+
     @Test
 /**
  A user shall be able to create a new account by
@@ -89,12 +85,12 @@ class PlantappApplicationTests {
  */
     public void testANV03F_shouldCreateAccountWithValidInput() throws Exception {
         String json = """
-        {
-            "email": "test@test.com",
-            "username": "testuser",
-            "password": "123456"
-        }
-        """;
+                {
+                    "email": "test@test.com",
+                    "username": "testuser",
+                    "password": "123456"
+                }
+                """;
 
         mockMvc.perform(post("/api/users/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -140,14 +136,14 @@ class PlantappApplicationTests {
         mockMvc.perform(post("/api/library")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-            {
-              "nickname": "TestPlant",
-              "speciesId": "1337",
-              "lastWatered": "2026-02-20",
-              "waterInterval": 1,
-              "imageUrl": ""
-            }
-            """))
+                                {
+                                  "nickname": "TestPlant",
+                                  "speciesId": "1337",
+                                  "lastWatered": "2026-02-20",
+                                  "waterInterval": 1,
+                                  "imageUrl": ""
+                                }
+                                """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.nickname").value("TestPlant"));
 
@@ -167,7 +163,6 @@ class PlantappApplicationTests {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[*].nickname").value(hasItem("LibraryPlant")));
     }
-
 
 
     @Test
@@ -271,7 +266,7 @@ class PlantappApplicationTests {
         Plant plant = new Plant("LibraryPlant", "123", LocalDate.now(), 3, "");
         plant = plantRepository.save(plant);
 
-        mockMvc.perform(put("/api/library/" + plant.getId()+"/water"))
+        mockMvc.perform(put("/api/library/" + plant.getId() + "/water"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.lastWatered").value(LocalDate.now().toString()));
     }
