@@ -1,13 +1,18 @@
 package com.happyplants2.plantapp;
 
+import com.happyplants2.plantapp.controller.UserController;
 import com.happyplants2.plantapp.model.Plant;
+import com.happyplants2.plantapp.model.User;
 import com.happyplants2.plantapp.repository.PlantRepository;
+import com.happyplants2.plantapp.repository.UserRepository;
+import com.happyplants2.plantapp.service.UserService;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,17 +38,39 @@ class PlantappApplicationTests {
     @Autowired
     private PlantRepository plantRepository;
 
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    PasswordEncoder passwordEncoder;
+
     @Test
     void contextLoads() {
     }
 
-    @Disabled("ANV01F not implemented yet")
+    //@Disabled("ANV01F not implemented yet")
     @Test
 /**
  A user shall be able to log in by entering
  their email address and password.
  */
-    public void testANV01F_shouldLoginWithValidEmailAndPassword() {
+    public void testANV01F_shouldLoginWithValidEmailAndPassword() throws Exception {
+        userService.registerUser("test@test.com", "testuser", "123456");
+
+
+        String loginJson = """
+        {
+            "email": "test@test.com",
+            "password": "123456"
+        }
+        """;
+
+        mockMvc.perform(post("/api/users/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginJson))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.user.email").value("test@test.com"))
+                .andExpect(jsonPath("$.plants").isArray());
     }
 
     @Disabled("ANV02F not implemented yet")
@@ -196,7 +223,7 @@ class PlantappApplicationTests {
     }
 
 
-    @Disabled
+    @Disabled("not implemented yet")
     @Test
 /**
  User data, associated plants, email address, username, password, and
@@ -215,7 +242,7 @@ class PlantappApplicationTests {
     public void testSOK01F_shouldProvidePlantSuggestionsAndSearch() {
     }
 
-    @Disabled
+    @Disabled("should probably be checked in frontend?")
     @Test
 /**
  The application shall calculate and display when a plant needs watering through a visual representation.
