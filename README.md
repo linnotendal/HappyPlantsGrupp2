@@ -12,7 +12,7 @@ and extend the application as part of a system development course.
 ## Contributors
 - Linn Otendal (linnotendal)
 - Lana Maher (lana2521)
-- Christoffer Björnheimer (Bjornheimer89)
+- Christoffer Björnheimer (BJ0RNHEIMER)
 - Lilas Beirakdar (LilasBe)
 - Ellen-Mae Lantz (MagiicalMae)
 - Erik Sjöberg (Er7k)
