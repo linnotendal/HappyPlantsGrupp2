@@ -12,12 +12,11 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:63342", allowCredentials = "true")
+@CrossOrigin(origins = "http://localhost:63342")
 @RequestMapping("/api/user-plants")
 public class MyPlantsLibraryController {
     @Autowired
     private LibraryService myPlantsLibraryService;
-
     // tested
     @GetMapping
     public ResponseEntity<?> getUserPlants(HttpSession session) {

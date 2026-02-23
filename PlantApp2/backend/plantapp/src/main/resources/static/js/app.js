@@ -65,6 +65,7 @@ async function renderDiscoverSection(plants = null) {
         });
     } catch (error) {
         grid.innerHTML = '<p>Error loading plants from server.</p>';
+        grid.innerHTML = `<p>Error: ${error.message}</p>`;
     }
 }
 async function handleSearch() {
@@ -187,14 +188,23 @@ async function handleLibrarySearch() {
 }
 async function handleSortChange() {
     const sortBy = document.getElementById('sort-library-select').value;
-
     let library = await api.getLibrary();
 
+    if (!library || library.length === 0) return;
+
     if (sortBy === 'water-status') {
-        library.sort((a, b) => a.getProgress() - b.getProgress());
+        library.sort((a, b) => {
+            const progressA = typeof a.getProgress === 'function' ? a.getProgress() : 0;
+            const progressB = typeof b.getProgress === 'function' ? b.getProgress() : 0;
+            return progressA - progressB;
+        });
     }
     else if (sortBy === 'name') {
-        library.sort((a, b) => a.name.localeCompare(b.name));
+        library.sort((a, b) => {
+            const nameA = a.name || "";
+            const nameB = b.name || "";
+            return nameA.localeCompare(nameB);
+        });
     }
     renderLibrarySection(library);
 }
