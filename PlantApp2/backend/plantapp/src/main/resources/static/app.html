@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Happy Plants</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>My Happy Plants</h1>
+        <nav>
+            <button class="nav-btn active" onclick="showSection('discover')">Discover</button>
+            <button class="nav-btn " onclick="showSection('library')">My Plants</button>
+        </nav>
+    </header>
+
+    <main>
+        <!-- DISCOVER: Browse available plants -->
+        <section id="discover-section">
+            <button class="btn-toggle-grid" onclick="toggleGrid('discover')">Toggle GridList</button>
+            <h2>Discover Plants</h2>
+            <p class="section-description">Find plants you like and add them to your library</p>
+            <div class="search-box">
+                <input type="text" id="plant-search-input" placeholder="Search by plant name (e.g. Aloe)... " oninput="handleSearch()">
+                <button class="btn-search" oninput="handleSearch()">Search</button>
+            </div>
+            <div id="discover-grid" class="plant-grid"></div>
+        </section>
+
+        <!-- LIBRARY: User's saved plants -->
+        <section id="library-section" class="hidden">
+            <button class="btn-toggle-grid" onclick="toggleGrid('library')">Toggle GridList</button>
+            <h2>My Plants</h2>
+            <div class="search-box">
+                <input type="text" id="library-search-input"
+                       placeholder="Search in my plants..."
+                       oninput="handleLibrarySearch()">
+            </div>
+
+            <div class="library-controls">
+                <select id="sort-library-select" onchange="handleSortChange()">
+                    <option value="default">Default (Added date)</option>
+                    <option value="water-status">Thirstiest First 💧</option>
+                    <option value="name">Name (A-Z)</option>
+                </select>
+            </div>
+
+            <div id="library-grid" class="plant-grid"></div>
+            <p id="empty-library-msg" class="empty-message">
+                You have no plants yet. Go to <strong>Discover</strong> to add some! 🌿
+            </p>
+        </section>
+    </main>
+</div>
+
+<script src="js/plant.js"></script>
+<script src="js/api.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
