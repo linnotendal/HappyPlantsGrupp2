@@ -1,6 +1,5 @@
 package com.happyplants2.plantapp;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.happyplants2.plantapp.model.Plant;
 import com.happyplants2.plantapp.repository.PlantRepository;
 import org.junit.jupiter.api.Disabled;
@@ -33,10 +32,6 @@ class PlantappApplicationTests {
 
     @Autowired
     private PlantRepository plantRepository;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
 
     @Test
     void contextLoads() {
@@ -164,17 +159,33 @@ class PlantappApplicationTests {
         assertFalse(plantRepository.existsById(plant.getId()));
     }
 
-    @Disabled
+
     @Test
 /**
  A user shall be able to see information about different plants including name,
  scientific name, family name, water needs, sunlight requirements, hardiness zones,
  and care level.
  */
-    public void testINF01F_shouldDisplayDetailedPlantInformation() {
+    public void testINF01F_shouldDisplayDetailedPlantInformation() throws Exception {
+        Plant plant = new Plant(
+                "MyPlant",
+                "PL123",
+                LocalDate.now(),
+                5,
+                "image.jpg"
+        );
+
+        plant = plantRepository.save(plant);
+
+        mockMvc.perform(get("/api/library/" + plant.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.nickname").value("MyPlant"))
+                .andExpect(jsonPath("$.plantId").value("PL123"))
+                .andExpect(jsonPath("$.waterFrequencyDays").value(5))
+                .andExpect(jsonPath("$.imageURL").value("image.jpg"));
     }
 
-    @Disabled
+    @Disabled("Not implemented yet")
     @Test
 /**
  When a user logs in, the watering status of already added plants shall be
@@ -195,7 +206,7 @@ class PlantappApplicationTests {
     public void testLA01F_shouldPersistUserDataAcrossSessions() {
     }
 
-    @Disabled
+    @Disabled("Not implemented yet")
     @Test
 /**
  A user shall be able to see suggestions for different plants and search
