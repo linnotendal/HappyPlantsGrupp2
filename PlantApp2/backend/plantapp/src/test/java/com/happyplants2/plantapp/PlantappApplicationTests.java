@@ -17,6 +17,7 @@ import java.time.LocalDate;
 
 import static org.hamcrest.Matchers.hasItem;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -148,12 +149,19 @@ class PlantappApplicationTests {
                 .andExpect(jsonPath("$.nickname").value("LibraryPlant"));
     }
 
-    @Disabled
+
     @Test
 /**
  A user shall be able to remove a plant from their library.
  */
-    public void testBIB07F_shouldRemovePlantFromLibrary() {
+    public void testBIB07F_shouldRemovePlantFromLibrary() throws Exception {
+        Plant plant = new Plant("LibraryPlant", "123", LocalDate.now(), 3, "");
+        plant = plantRepository.save(plant);
+
+        mockMvc.perform(delete("/api/library/" + plant.getId()))
+                .andExpect(status().isOk());
+
+        assertFalse(plantRepository.existsById(plant.getId()));
     }
 
     @Disabled
@@ -204,12 +212,17 @@ class PlantappApplicationTests {
     public void testSK01F_shouldCalculateAndDisplayWateringIndicator() {
     }
 
-    @Disabled
     @Test
 /**
  A user shall be able to mark one or more plants as watered.
  */
-    public void testSK02F_shouldAllowUserToMarkPlantsAsWatered() {
+    public void testSK02F_shouldAllowUserToMarkPlantsAsWatered() throws Exception {
+        Plant plant = new Plant("LibraryPlant", "123", LocalDate.now(), 3, "");
+        plant = plantRepository.save(plant);
+
+        mockMvc.perform(put("/api/library/" + plant.getId()+"/water"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.lastWatered").value(LocalDate.now().toString()));
     }
 
 
