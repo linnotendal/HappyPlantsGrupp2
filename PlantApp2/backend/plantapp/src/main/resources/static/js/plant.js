@@ -1,5 +1,5 @@
  //Plant class - kept from old code, with small additions
-
+/**
  class Plant {
      constructor(id, name, family, wateringIntervalDays, lastWatered = null) {
          this.id = id;
@@ -56,4 +56,4 @@
     new Plant(6, "Fiddle Leaf Fig", "Ficus lyrata",               7),
     new Plant(7, "ZZ Plant",        "Zamioculcas zamiifolia",    21),
     new Plant(8, "Spider Plant",    "Chlorophytum comosum",       5)
-];
+];*/

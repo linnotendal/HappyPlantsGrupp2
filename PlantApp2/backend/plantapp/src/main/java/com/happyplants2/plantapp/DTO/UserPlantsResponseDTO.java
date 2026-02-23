@@ -5,6 +5,8 @@ import com.happyplants2.plantapp.model.UserPlant;
 import java.time.LocalDate;
 
 public class UserPlantsResponseDTO {
+
+
     private Long userPlantId;
     private Integer plantId;
     private String commonName;
@@ -80,5 +82,12 @@ public class UserPlantsResponseDTO {
 
     public Integer getWateringIntervalDays() {
         return wateringIntervalDays;
+    }
+    public Long getUserPlantId() {
+        return userPlantId;
+    }
+
+    public void setUserPlantId(Long userPlantId) {
+        this.userPlantId = userPlantId;
     }
 }

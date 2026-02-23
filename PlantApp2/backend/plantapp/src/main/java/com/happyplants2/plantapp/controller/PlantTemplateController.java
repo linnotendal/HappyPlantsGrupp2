@@ -1,8 +1,11 @@
 package com.happyplants2.plantapp.controller;
 
+import com.happyplants2.plantapp.DTO.PlantDto;
 import com.happyplants2.plantapp.DTO.PlantResponseDTO;
 import com.happyplants2.plantapp.service.DiscoverService;
+import jakarta.persistence.criteria.CriteriaBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,11 +25,17 @@ public class PlantTemplateController {
     public List<PlantResponseDTO> searchPlants(@RequestParam String name) {
         return service.search(name);
     }
+
     @GetMapping("discover")
     public List<PlantResponseDTO> getPlants(@RequestParam(required = false) String name) {
         if (name == null || name.isEmpty()) {
             return service.getAllPlants();
         }
         return service.search(name);
+    }
+
+    @GetMapping("/discover/{id}")
+    public ResponseEntity<PlantResponseDTO> getPlantById(@PathVariable Integer id) {
+        return ResponseEntity.ok(service.getPlantById(id));
     }
 }
