@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | HappyPlants</title>
+    <title>Register | HappyPlants</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap" rel="stylesheet">
@@ -15,19 +15,23 @@
 <div class="app-title-container">
     <h1 class="app-title">Happy Plants</h1>
 </div>
-<div class="login-container">
-    <form id="login-form" class="login-form">
+<div class="register-container">
+    <form id="register-form" class="register-form">
         <div class="input-group">
-            <label for="email">Email</label>
-            <input type="email" id="email" placeholder="Enter your email address">
+            <label for="reg-email">Email</label>
+            <input type="email" id="reg-email" placeholder="Enter your email address">
         </div>
         <div class="input-group">
-            <label for="password">Password</label>
-            <input type="password" id="password" placeholder="Enter your password">
+            <label for="reg-username">Username</label>
+            <input type="text" id="reg-username" placeholder="Enter your username">
         </div>
-        <button type="submit" class="log-in-button">Login</button>
+        <div class="input-group">
+            <label for="reg-password">Password</label>
+            <input type="password" id="reg-password" placeholder="Enter your password">
+        </div>
+
+        <button type="submit" class="register-button">Create Account</button>
     </form>
-    <p class="signup-link">Don't have an account? <a href="register.html">Sign up</a></p>
 </div>
 <p id="message"></p>
 </body>
