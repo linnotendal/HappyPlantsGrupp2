@@ -47,8 +47,7 @@ class PlantappApplicationTests {
     @Test
     void contextLoads() {
     }
-
-    //@Disabled("ANV01F not implemented yet")
+    
     @Test
 /**
  A user shall be able to log in by entering
@@ -73,6 +72,7 @@ class PlantappApplicationTests {
                 .andExpect(jsonPath("$.plants").isArray());
     }
 
+
     @Disabled("ANV02F not implemented yet")
     @Test
 /**
@@ -81,13 +81,26 @@ class PlantappApplicationTests {
     public void testANV02F_shouldLogoutUserSuccessfully() {
     }
 
-    @Disabled("ANV03F not implemented yet")
+   //@Disabled("ANV03F not implemented yet")
     @Test
 /**
  A user shall be able to create a new account by
  entering their email address, name, and password.
  */
-    public void testANV03F_shouldCreateAccountWithValidInput() {
+    public void testANV03F_shouldCreateAccountWithValidInput() throws Exception {
+        String json = """
+        {
+            "email": "test@test.com",
+            "username": "testuser",
+            "password": "123456"
+        }
+        """;
+
+        mockMvc.perform(post("/api/users/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isOk())
+                .andExpect(content().string("User registered successfully"));
     }
 
     @Disabled("ANV05F not implemented yet")
