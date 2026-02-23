@@ -1,24 +1,41 @@
 class UserPlant {
     constructor(data) {
-        this.plantId = data.plantId;
-        this.commonName = data.commonName;
-        this.scientificName = data.scientificName;
-        this.imageUrl = data.imageUrl;
-        this.lastWatered = new Date(data.lastWatered);
-        this.nickName = data.nickName;
-        this.wateringIntervalDays = data.wateringIntervalDays;
+        this.userPlantId = data.userPlantId;
+        this.backendId = data.userPlantId;
+
+        this.commonName = data.commonName || 'Unknown Plant';
+        this.scientificName = data.scientificName || '';
+        this.imageUrl = data.imageUrl || '';
+        this.location = data.location || '';
+        this.nickName = data.nickName || '';
+        this.wateringIntervalDays = data.wateringIntervalDays || 7;
+        this.lastWatered = data.lastWatered ? new Date(data.lastWatered) : new Date();
     }
+
+    get name() { return this.nickName || this.commonName; }
 
     getProgress() {
-        const daysSince = this.getDaysSinceWatered();
-        let progress = 1 - (daysSince / this.template.wateringIntervalDays);
-        if (progress <= 0.02) return 0.02;
-        if (progress >= 0.95) return 1.0;
-        return progress;
+        const now = new Date();
+        const last = new Date(this.lastWatered);
+
+        const diffTime = now.setHours(0,0,0,0) - last.setHours(0,0,0,0);
+        const daysSince = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        let progress = 1 - (daysSince / this.wateringIntervalDays);
+        return Math.max(0.05, Math.min(1, progress));
     }
 
-    getDaysSinceWatered() {
-        const diff = new Date() - this.lastWatered;
-        return Math.floor(diff / (1000 * 60 * 60 * 24));
+    getDaysUntilWatering() {
+        const now = new Date();
+        const last = new Date(this.lastWatered);
+        const diffTime = now.setHours(0,0,0,0) - last.setHours(0,0,0,0);
+        const daysSince = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        return this.wateringIntervalDays - daysSince;
+    }
+
+    needsWatering() {
+        return this.getDaysUntilWatering() <= 0;
+    }
+    water() {
+        this.lastWatered = new Date();
     }
 }

@@ -3,7 +3,6 @@
  * Temporarily uses localStorage. When backend/database is ready,
  * swap each method for fetch() (see comments).
  */
-
 //Fetches API key from key.json
 /*
 async function fetchKey() {
@@ -68,83 +67,62 @@ const api = {
 
     async getLibrary() {
         try {
-            const response = await fetch(`${API_BASE_URL}/library`);
-            if (!response.ok) throw new Error('Backend not available');
+            const response = await fetch(`${API_BASE_URL}/user-plants`);
+            if (!response.ok) throw new Error('Failed to fetch');
 
             const data = await response.json();
-            return data.map(p => {
-                const plant = new Plant(
-                    parseInt(p.plantId) || p.id,
-                    p.nickname,
-                    p.family,
-                    p.waterFrequencyDays,
-                    p.lastWatered
-                );
-                plant.backendId = p.id;
-                return plant;
-            });
+            console.log(data)
+            return data.map(plantData => new UserPlant(plantData));
         } catch (error) {
             console.warn('Using localStorage fallback:', error.message);
             return this._getLibraryFromLocalStorage();
         }
     },
 
-    async addToLibrary(plant) {
+    async addToLibrary(plantTemplate) {
         try {
-            const response = await fetch(`${API_BASE_URL}/library`, {
+            const response = await fetch(`${API_BASE_URL}/user-plants/add/${plantTemplate.id}`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    nickname: plant.name,
-                    plantId: plant.id.toString(),
-                    waterFrequencyDays: plant.wateringIntervalDays,
-                    lastWatered: new Date().toISOString().split('T')[0]
-                })
+                headers: { 'Content-Type': 'application/json' }
             });
 
             if (!response.ok) throw new Error('Backend not available');
+            const data = await response.json();
+            return new UserPlant(data);
+        } catch (error) {
+            console.warn('Using localStorage fallback:', error.message);
+        }
+    },
+
+    async removeFromLibrary(backendId) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/user-plants/remove/${backendId}`, {
+                method: 'DELETE',
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                console.error("Server returned error:", response.status);
+                throw new Error('Failed to remove from server');
+            }
             return true;
         } catch (error) {
             console.warn('Using localStorage fallback:', error.message);
-            return this._addToLibraryLocalStorage(plant);
+            this._removeFromLibraryLocalStorage(backendId);
         }
     },
 
-    async removeFromLibrary(plantId) {
+    async waterPlant(userPlantId) {
         try {
-            const library = await this.getLibrary();
-            const plant = library.find(p => p.id === plantId);
 
-            if (!plant || !plant.backendId) {
-                throw new Error('Plant not found or no backend ID');
-            }
-
-            const response = await fetch(`${API_BASE_URL}/library/${plant.backendId}`, {
-                method: 'DELETE'
-            });
-            if (!response.ok) throw new Error('Failed to remove');
-        } catch (error) {
-            console.warn('Using localStorage fallback:', error.message);
-            this._removeFromLibraryLocalStorage(plantId);
-        }
-    },
-
-    async waterPlant(plantId) {
-        try {
-            const library = await this.getLibrary();
-            const plant = library.find(p => p.id === plantId);
-
-            if (!plant || !plant.backendId) {
-                throw new Error('Plant not found or no backend ID');
-            }
-
-            const response = await fetch(`${API_BASE_URL}/library/${plant.backendId}/water`, {
-                method: 'PUT'
+            const response = await fetch(`${API_BASE_URL}/user-plants/water/${userPlantId}`, {
+                method: 'PUT',
+                credentials: 'include'
             });
             if (!response.ok) throw new Error('Failed to water');
+            return true;
         } catch (error) {
             console.warn('Using localStorage fallback:', error.message);
-            this._waterPlantLocalStorage(plantId);
         }
     },
 
@@ -152,7 +130,7 @@ const api = {
         const library = await this.getLibrary();
         return library.some(p => p.id === plantId || p.id === plantId.toString());
     },
-
+/**
     //Localstorage, can be removed when database is implemented, or keep as backup
     _getLibraryFromLocalStorage() {
         const data = localStorage.getItem(STORAGE_KEY);
@@ -188,5 +166,5 @@ const api = {
 
     _saveLibrary(library) {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(library));
-    }
+    }*/
 };
