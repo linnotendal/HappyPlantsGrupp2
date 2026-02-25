@@ -4,12 +4,14 @@ import com.happyplants2.plantapp.model.Plant;
 import com.happyplants2.plantapp.repository.PlantRepository;
 import com.happyplants2.plantapp.service.UserService;
 
+import org.apache.catalina.authenticator.SavedRequest;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -100,31 +102,67 @@ class PlantappApplicationTests {
                 .andExpect(content().string("User registered successfully"));
     }
 
-    @Disabled("ANV05F not implemented yet")
+    //@Disabled("ANV05F not implemented yet")
     @Test
 /**
  A user shall receive an error message
  if they attempt to create an account without a username.
  */
-    public void testANV05F_shouldRejectAccountWithoutUsername() {
+    public void testANV05F_shouldRejectAccountWithoutUsername() throws Exception {
+        String json= """
+                 {"email": "test@test.com",
+                    "username": "",
+                    "password": "123456"
+                 }
+                 """;
+        mockMvc.perform(post("/api/users/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Username is required"));
     }
 
-    @Disabled("ANV06F not implemented yet")
+ //   @Disabled("ANV06F not implemented yet")
     @Test
 /**
  A user shall receive an error message when logging in if the entered
  password or email address does not match the database records.
  */
-    public void testANV06F_shouldRejectLoginWithInvalidCredentials() {
+    public void testANV06F_shouldRejectLoginWithInvalidCredentials() throws Exception {
+        userService.registerUser("wronginfo@test.com", "user1", "123456");
+        String loginJson= """
+                {
+                "email": "wronginfo@test.com",
+                "password": "wrongpassword"
+                }
+                """;
+        mockMvc.perform(post("/api/users/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(loginJson))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Wrong password"));
+
     }
 
-    @Disabled("ANV07F not implemented yet")
+   // @Disabled("ANV07F not implemented yet")
     @Test
 /**
  A user shall receive an error message when
  logging in if no account exists for the entered email address.
  */
-    public void testANV07F_shouldRejectLoginWhenEmailDoesNotExist() {
+    public void testANV07F_shouldRejectLoginWhenEmailDoesNotExist() throws Exception {
+        String loginJson= """
+                {
+                "email": "johnDoe@test.com",
+                "password": "123566"
+                }
+                """;
+        mockMvc.perform(post("/api/users/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(loginJson))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("User with this email is not found"));
+        
     }
 
     @Test
@@ -238,7 +276,7 @@ class PlantappApplicationTests {
  User data, associated plants, email address, username, password, and
  settings shall be stored. Data shall be accessible even if the application
  has been closed or used by another user.
- */
+ ...*/
     public void testLA01F_shouldPersistUserDataAcrossSessions() {
     }
 
@@ -249,8 +287,7 @@ class PlantappApplicationTests {
  for plants based on plant name.
  */
     public void testSOK01F_shouldProvidePlantSuggestionsAndSearch() {
-    }
-
+    }//...
     @Disabled("should probably be checked in frontend?")
     @Test
 /**
