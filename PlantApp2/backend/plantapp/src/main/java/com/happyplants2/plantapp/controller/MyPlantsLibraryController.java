@@ -38,7 +38,7 @@ public class MyPlantsLibraryController {
     //Tested
     @PutMapping("/water/{userPlantId}")
     public ResponseEntity<?> waterPlant(@PathVariable Long userPlantId, HttpSession session) {
-        Long userId = 1L;
+        Long userId = (Long) session.getAttribute("userId");
         if(userId == null) {
             return ResponseEntity.status(401).body("User is not logged in");
         }
