@@ -3,33 +3,12 @@
  * Temporarily uses localStorage. When backend/database is ready,
  * swap each method for fetch() (see comments).
  */
-//Fetches API key from key.json
-/*
-async function fetchKey() {
-    let key = await fetch("/js/key.json").then((res) => res.json());
-    return key.apikey;
-}
-*/
 
 const API_BASE_URL = 'http://localhost:8080/api';
 const STORAGE_KEY = 'happyplants_library';
 
 const api = {
 
-    //GET call to perenual (temporarily only calls first page, 30 plants)
-    /*
-    async getPlantsFromAPI() {
-        const response = await fetch('https://perenual.com/api/v2/species-list?page=1&indoor=1&key=' + await fetchKey())
-        var plants = await response.json();
-
-        if (response.ok) {
-            return plants.data;
-        } else {
-            console.log(response);
-            return response;
-        }
-    },
-    */
     async searchPlantsFromBackend(query) {
         try {
             const response = await fetch(`http://localhost:8080/api/discover/search?name=${encodeURIComponent(query)}`);
@@ -67,7 +46,9 @@ const api = {
 
     async getLibrary() {
         try {
-            const response = await fetch(`${API_BASE_URL}/user-plants`);
+            const response = await fetch(`${API_BASE_URL}/user-plants`,{
+                credentials: 'include'
+            });
             if (!response.ok) throw new Error('Failed to fetch');
 
             const data = await response.json();
@@ -83,7 +64,8 @@ const api = {
         try {
             const response = await fetch(`${API_BASE_URL}/user-plants/add/${plantTemplate.id}`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include'
             });
 
             if (!response.ok) throw new Error('Backend not available');

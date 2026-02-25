@@ -5,8 +5,7 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
 /**
- * There is a possibility that this class will be removed later
- * and replaced with userPlants and plantsTemplates
+ * This class is to be removed when Test cases are corrected and replaced with plantTemplate
  */
 @Entity
 @Table(name = "plants")

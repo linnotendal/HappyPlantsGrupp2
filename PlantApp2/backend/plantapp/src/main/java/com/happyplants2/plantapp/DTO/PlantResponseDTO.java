@@ -2,6 +2,9 @@ package com.happyplants2.plantapp.DTO;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * This DTO class represents the JSON object frontend gets as a response
+ */
 public class PlantResponseDTO {
     private Integer id;
 
