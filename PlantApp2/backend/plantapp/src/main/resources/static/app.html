@@ -11,14 +11,15 @@
     <header>
         <h1>My Happy Plants</h1>
         <nav>
-            <button class="nav-btn active" onclick="showSection('discover')">Discover</button>
-            <button class="nav-btn " onclick="showSection('library')">My Plants</button>
+            <button class="nav-btn active" onclick="showSection('library')">My Plants</button>
+            <button class="nav-btn " onclick="showSection('discover')">Discover</button>
+            <button class="nav-btn settings" onclick="">⋮</button>
         </nav>
     </header>
 
     <main>
         <!-- DISCOVER: Browse available plants -->
-        <section id="discover-section">
+        <section id="discover-section" class="hidden">
             <button class="btn-toggle-grid" onclick="toggleGrid('discover')">Toggle GridList</button>
             <h2>Discover Plants</h2>
             <p class="section-description">Find plants you like and add them to your library</p>
@@ -30,7 +31,7 @@
         </section>
 
         <!-- LIBRARY: User's saved plants -->
-        <section id="library-section" class="hidden">
+        <section id="library-section" >
             <button class="btn-toggle-grid" onclick="toggleGrid('library')">Toggle GridList</button>
             <h2>My Plants</h2>
             <div class="search-box">

@@ -61,6 +61,10 @@ nav {
     font-weight: bold;
 }
 
+.settings {
+    margin-left: auto;
+}
+
 h2 {
     color: #559470;
     margin-bottom: 5px;
@@ -72,6 +76,7 @@ h2 {
     margin-bottom: 20px;
     font-size: 0.93em;
 }
+
 
 
 .hidden {
