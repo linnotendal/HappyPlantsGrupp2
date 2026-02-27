@@ -47,6 +47,7 @@ function showSection(sectionName) {
 
 async function renderDiscoverSection(plants = null) {
     const grid = document.getElementById('discover-grid');
+    const emptyMsg = document.getElementById('empty-library-msg');
     grid.innerHTML = '<p>Loading...</p>';
 
     try {
@@ -158,10 +159,30 @@ function setupLogout() {
 async function renderLibrarySection(filteredPlants = null) {
     const grid = document.getElementById('library-grid');
     const emptyMsg = document.getElementById('empty-library-msg');
-    if (filteredPlants == null) {
+    const sortSelect = document.getElementById('sort-library-select');
+    if (filteredPlants==null){
         grid.innerHTML = '<p>Loading...</p>';
     }
     const library = filteredPlants || await api.getLibrary();
+
+    if (library && library.length > 0) {
+        const sortBy = sortSelect.value;
+
+        if (sortBy === 'water-status') {
+            library.sort((a, b) => {
+                const progressA = typeof a.getProgress === 'function' ? a.getProgress() : 0;
+                const progressB = typeof b.getProgress === 'function' ? b.getProgress() : 0;
+                return progressA - progressB;
+            });
+        } else {
+            library.sort((a, b) => {
+                const nameA = a.name || "";
+                const nameB = b.name || "";
+                return nameA.localeCompare(nameB);
+            });
+        }
+    }
+
     grid.innerHTML = '';
 
     if (library.length === 0) {

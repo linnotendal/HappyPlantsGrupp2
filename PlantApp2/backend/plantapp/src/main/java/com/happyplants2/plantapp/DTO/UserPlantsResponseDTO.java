@@ -4,6 +4,9 @@ import com.happyplants2.plantapp.model.UserPlant;
 
 import java.time.LocalDate;
 
+/**
+ *  This class Represent the JSON representation of a userPlant object returned to the Frontend
+ */
 public class UserPlantsResponseDTO {
 
 

@@ -16,7 +16,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * This class will handle getting information from the API and saving plant information to the database
+ * This class will handle getting information from the external API and saving plant information to the database
  *
  */
 @Service
@@ -82,6 +82,12 @@ public class PlantImportService {
             e.printStackTrace();
         }
     }
+
+    /**
+     * This method will get details about a specific plant from the API
+     * @param id
+     * @return
+     */
     public PlantDto getPlantDetails(Integer id) {
         String detailUrl = "https://perenual.com/api/species/details/"
                 + id + "?key=" + apiKey;

@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
  * Temporary class only to test getting information from the API and saving them to the database
  * Then It will be removed and replaced with getting the information automatically when starting the application
  */
-
+//Remove this class when getting details about plants is resolved
 @RestController
 @RequestMapping("/plants")
 @CrossOrigin(origins = "*")
