@@ -1,5 +1,3 @@
-document.addEventListener('DOMContentLoaded', loadPlantInfo);
-
 async function loadPlantInfo() {
     const params = new URLSearchParams(window.location.search);
     const id = params.get('id');

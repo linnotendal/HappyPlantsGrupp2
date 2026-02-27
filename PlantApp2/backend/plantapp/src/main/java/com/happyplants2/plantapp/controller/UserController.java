@@ -49,6 +49,18 @@ public class UserController {
         }
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUser(HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        System.out.println("me was called");
+        if (userId == null) {
+            return ResponseEntity.status(401).body("Not logged in");
+        }
+        User user = userService.getUserById(userId);
+        return ResponseEntity.ok(user);
+
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteUser(@PathVariable("id") long userId) {
        try {
@@ -61,6 +73,7 @@ public class UserController {
 
     @PostMapping("/logout")
     public ResponseEntity<?> logoutUser(HttpSession session) {
+        System.out.println("log out was called");
        try{ userService.logOutUser(session);
         return ResponseEntity.ok("User logout successfully");
        }catch (IllegalArgumentException e) {
