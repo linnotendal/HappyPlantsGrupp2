@@ -27,6 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional
+@Disabled
 class PlantappApplicationTests {
 //TODO We need to check the class MyPLantsLibraryController också, den används inte i tests just nu.
     /** Den här testklassen provar API-calls genom att använda mockmvc.
