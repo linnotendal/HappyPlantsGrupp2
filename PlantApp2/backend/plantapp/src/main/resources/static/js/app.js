@@ -1,22 +1,46 @@
 //UI logic only. Does not touch data directly, uses api.js for everything.
 
-document.addEventListener('DOMContentLoaded', () => {
+const DEV_MODE = true;
+
+document.addEventListener('DOMContentLoaded', async () => {
+
+    if (!DEV_MODE) {
+        try {
+            const response = await fetch("/api/users/me", {
+                credentials: "include"
+            });
+
+            if (!response.ok) {
+                window.location.href = "index.html";
+                return;
+            }
+
+        } catch (error) {
+            window.location.href = "index.html";
+            return;
+        }
+    }
+
     renderDiscoverSection();
     renderLibrarySection();
+    setupLogout();
 });
 
 function showSection(sectionName) {
+
     document.getElementById('discover-section').classList.add('hidden');
     document.getElementById('library-section').classList.add('hidden');
-    document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+
+    document.querySelectorAll('.nav-btn')
+        .forEach(btn => btn.classList.remove('active'));
 
     if (sectionName === 'discover') {
         document.getElementById('discover-section').classList.remove('hidden');
-        document.querySelectorAll('.nav-btn')[0].classList.add('active');
+        document.querySelector('.nav-btn[onclick*="discover"]').classList.add('active');
         renderDiscoverSection();
     } else {
         document.getElementById('library-section').classList.remove('hidden');
-        document.querySelectorAll('.nav-btn')[1].classList.add('active');
+        document.querySelector('.nav-btn[onclick*="library"]').classList.add('active');
         renderLibrarySection();
     }
 }
@@ -46,8 +70,8 @@ async function renderDiscoverSection(plants = null) {
                     ${plant.common_name} </h3>                    
                     <div class="plant-image-container">
                         ${plant.default_image
-                ? `<img src="${plant.default_image}" alt="${plant.common_name}">`
-                : `<div class="no-image">🌿</div>`}
+                    ? `<img src="${plant.default_image}" alt="${plant.common_name}">`
+                    : `<div class="no-image">🌿</div>`}
                     </div>
                     <div class="plant-details">
                         <p><strong>Scientific:</strong><br>${plant.scientific_name}</p>
@@ -71,7 +95,7 @@ async function renderDiscoverSection(plants = null) {
 }
 async function handleSearch() {
     const query = document.getElementById('plant-search-input').value.trim();
-    if (query==="") {
+    if (query === "") {
         const allPlants = await api.getPlantsFromAPI();
         renderDiscoverSection(allPlants);
         return;
@@ -100,12 +124,36 @@ async function handleAddFromDiscover(event, plantData) {
         btn.classList.remove('btn-add');
         btn.classList.add('btn-added');
         renderLibrarySection();
-    }catch (error){
+    } catch (error) {
         btn.innerText = originalText;
         btn.disabled = false;
         console.error("Error adding plant:", error);
         alert("Failed to add plant. Please try again.");
     }
+}
+
+
+function setupLogout() {
+    const logoutBtn = document.getElementById("logout-btn");
+
+    if (!logoutBtn) return;
+
+    logoutBtn.addEventListener("click", async () => {
+        try {
+            const response = await fetch("/api/users/logout", {
+                method: "POST",
+                credentials: "include"
+            });
+
+            if (response.ok) {
+                window.location.href = "index.html";
+            } else {
+                alert("Logout failed");
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    });
 }
 
 async function renderLibrarySection(filteredPlants = null) {
@@ -149,7 +197,7 @@ async function renderLibrarySection(filteredPlants = null) {
         const progress = plant.getProgress();
 
         let barColor = '#6b9c38';
-        if (progress < 0.5)  barColor = '#e6a817';
+        if (progress < 0.5) barColor = '#e6a817';
         if (progress < 0.25) barColor = '#d44';
 
         let statusText = `Needs water in ${daysUntil} day${daysUntil !== 1 ? 's' : ''}`;
@@ -181,8 +229,8 @@ async function renderLibrarySection(filteredPlants = null) {
                 <p class="last-watered">
                     Last watered:
                     ${plant.lastWatered
-                        ? new Date(plant.lastWatered).toLocaleDateString('en-US')
-                        : 'Never'}
+                ? new Date(plant.lastWatered).toLocaleDateString('en-US')
+                : 'Never'}
                 </p>
             
                 <div class="card-btn-row">
@@ -231,7 +279,7 @@ async function handleSortChange() {
 }
 
 function toggleMenu(e, id) {
-    if(e){
+    if (e) {
         e.stopPropagation()
         e.preventDefault();
     }
@@ -287,18 +335,26 @@ async function waterPlant(userPlantId) {
     }
 }
 
-let gridActive = false
+async function openPlantInfo(id) {
 
-function toggleGrid(section) {
-    const grid =
-        section === 'discover'
-            ? document.getElementById('discover-grid')
-            : document.getElementById('library-grid')
+    const container = document.getElementById('plant-info-container');
 
-    grid.classList.toggle('grid-view');
-    (section =='discover') ? renderDiscoverSection() : renderLibrarySection();
+    try {
+        const data = await api.getPlantById(id);
+        const plant = new PlantTemplate(data);
+
+        container.innerHTML = plant.renderInformationPage();
+
+        document.getElementById('plant-modal')
+            .classList.remove('hidden');
+
+    } catch (error) {
+        container.innerHTML = "<p>Failed to load plant information.</p>";
+        console.error(error);
+    }
 }
 
-function openPlantInfo(id) {
-    window.location.href = `information.html?id=${id}`;
+function closePlantModal() {
+    document.getElementById('plant-modal')
+        .classList.add('hidden');
 }

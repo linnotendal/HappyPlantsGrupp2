@@ -12,6 +12,13 @@ body {
     padding: 20px;
 }
 
+@font-face {
+    font-family: 'LogoFont';
+    src: url('./logo_font.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+}
+
 .container {
     max-width: 80%;
     margin: 0 auto;
@@ -26,9 +33,17 @@ header {
     margin-bottom: 30px;
     border-bottom: 2px solid #6b9c38;
     padding-bottom: 20px;
+
+    /*
+    background-image: url('../background.jpg');
+    background-size: cover;
+    background-position: center;
+    */
+
 }
 
 h1 {
+    font-family: 'LogoFont', serif;
     color: #405e21;
     font-size: 2.5em;
     margin-bottom: 15px;
@@ -52,16 +67,26 @@ nav {
 }
 
 .nav-btn:hover {
-    background: #e8f5e9;
+    background: #405e21;
+    color: #ffffff;
 }
 
 .nav-btn.active {
     background: #405e21;
-    color: white;
+    color: #e0ffc2;
     font-weight: bold;
 }
 
+.settings {
+    margin-left: auto;
+}
+
+.logout{
+    margin-left: auto;
+}
+
 h2 {
+    font-family: 'LogoFont', serif;
     color: #559470;
     margin-bottom: 5px;
     font-size: 1.5em;
@@ -72,6 +97,7 @@ h2 {
     margin-bottom: 20px;
     font-size: 0.93em;
 }
+
 
 
 .hidden {
@@ -89,21 +115,9 @@ h2 {
 
 /* plant grid and cards */
 .plant-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.plant-grid.grid-view {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 20px;
-}
-
-.plant-grid:not(.grid-view) .plant-card {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: center;
 }
 
 .plant-card {
@@ -171,7 +185,7 @@ h2 {
 }
 
 .btn-add:hover {
-    background: #334e18;
+    background: #de750b;
 }
 
 /* Already added (disabled) */
@@ -194,13 +208,17 @@ h2 {
 flex-grow: 1;
     padding: 10px;
     background: #c8e6c9;
-    color: #405e21;
+    color: #e0ffc2;
     border: none;
     border-radius: 8px;
     font-size: 0.95em;
     font-weight: 600;
     cursor: pointer;
     margin-bottom: 18px;
+}
+
+.btn-toggle-grid:hover {
+    color: #ffffff;
 }
 
 /* Water button */
@@ -543,6 +561,47 @@ flex-grow: 1;
         width: 100%;
     }
 }
+
+/* Modal for information */
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal.hidden {
+    display: none;
+}
+
+.modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 16px;
+    width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.modal-close {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    background: none;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+}
+
+.modal-close:hover {
+    color: #d44;
+    transform: scale(1.1);
+}
+
 
 /* Animation */
 @keyframes fadeIn {

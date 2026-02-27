@@ -1,62 +1,90 @@
 <!DOCTYPE html>
 <html lang="sv">
-<head>
+
+<head >
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Happy Plants</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
+
 <body>
-<div class="container">
-    <header>
-        <h1>My Happy Plants</h1>
-        <nav>
-            <button class="nav-btn active" onclick="showSection('discover')">Discover</button>
-            <button class="nav-btn " onclick="showSection('library')">My Plants</button>
-        </nav>
-    </header>
+    <div class="container">
+        <header>
+            <h1>My Happy Plants</h1>
+            <nav>
+                <button class="nav-btn active" onclick="showSection('library')" title="View your saved plants">
+                    My Plants
+                </button>
+                <button class="nav-btn " onclick="showSection('discover')" title="View all available plants">
+                    Discover
+                </button>
+                <button class="nav-btn " onclick="showSection('recommended')" title="Find new plants based on your library!">Recommendations</button>
+                <button id="logout-btn" class="nav-btn logout" title="Have a good day!">Log out</button>
+            </nav>
+        </header>
 
-    <main>
-        <!-- DISCOVER: Browse available plants -->
-        <section id="discover-section">
-            <button class="btn-toggle-grid" onclick="toggleGrid('discover')">Toggle GridList</button>
-            <h2>Discover Plants</h2>
-            <p class="section-description">Find plants you like and add them to your library</p>
-            <div class="search-box">
-                <input type="text" id="plant-search-input" placeholder="Search by plant name (e.g. Aloe)... " oninput="handleSearch()">
-                <button class="btn-search" oninput="handleSearch()">Search</button>
-            </div>
-            <div id="discover-grid" class="plant-grid"></div>
-        </section>
+        <main>
+            <!-- DISCOVER: Browse available plants -->
+            <section id="discover-section" class="hidden">
+                <h2>Discover Plants</h2>
+                <p class="section-description">Find plants you like and add them to your library</p>
+                <div class="search-box">
+                    <input type="text" id="plant-search-input" placeholder="Search by plant name (e.g. Aloe)... "
+                        oninput="handleSearch()">
+                    <button class="btn-search" oninput="handleSearch()">Search</button>
+                </div>
+                <div id="discover-grid" class="plant-grid"></div>
+            </section>
 
-        <!-- LIBRARY: User's saved plants -->
-        <section id="library-section" class="hidden">
-            <button class="btn-toggle-grid" onclick="toggleGrid('library')">Toggle GridList</button>
-            <h2>My Plants</h2>
-            <div class="search-box">
-                <input type="text" id="library-search-input"
-                       placeholder="Search in my plants..."
-                       oninput="handleLibrarySearch()">
-            </div>
+            <!-- LIBRARY: User's saved plants -->
+            <section id="library-section">
+                <h2>My Plants</h2>
+                <p class="section-description">All your beautiful plants in one place</p>
+                <div class="search-box">
+                    <input type="text" id="library-search-input" placeholder="Search in my plants..."
+                        oninput="handleLibrarySearch()">
+                </div>
 
-            <div class="library-controls">
-                <select id="sort-library-select" onchange="handleSortChange()">
-                    <option value="name" selected>Name (A-Z)</option>
-                    <option value="water-status">Thirstiest First 💧</option>
-                </select>
-            </div>
+                <div class="library-controls">
+                    <select id="sort-library-select" onchange="handleSortChange()">
+                        <option value="default">Default (Added date)</option>
+                        <option value="water-status">Thirstiest First 💧</option>
+                        <option value="name">Name (A-Z)</option>
+                    </select>
+                </div>
 
-            <div id="library-grid" class="plant-grid"></div>
-            <p id="empty-library-msg" class="empty-message">
-                You have no plants yet. Go to <strong>Discover</strong> to add some! 🌿
-            </p>
-        </section>
-    </main>
-</div>
+                <div id="library-grid" class="plant-grid"></div>
+                <p id="empty-library-msg" class="empty-message">
+                    You have no plants yet. Go to <strong>Discover</strong> to add some! 🌿
+                </p>
+            </section>
 
-<script src="js/PlantTemplate.js"></script>
-<script src="js/userPlant.js"></script>
-<script src="js/api.js"></script>
-<script src="js/app.js"></script>
+            <!-- Recommendations - based on users added plants -->
+            <section id="recommended-section" class="hidden">
+                <h2>Recommendations</h2>
+                <p class="section-description">Here you can find recommended plants based on your current plants</p>
+                <div class="search-box">
+                    <input type="text" id="plant-search-input" placeholder="Search by plant name (e.g. Aloe)... "
+                        oninput="handleRecommendedSearch()">
+                    <button class="btn-search" oninput="handleRecommendedSearch()">Search</button>
+                </div>
+                <div id="recommended-grid" class="plant-grid"></div>
+            </section>
+        </main>
+    </div>
+
+    <div id="plant-modal" class="modal hidden">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closePlantModal()">✕</button>
+            <div id="plant-info-container"></div>
+        </div>
+    </div>
+
+    <script src="js/PlantTemplate.js"></script>
+    <script src="js/userPlant.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
 </body>
+
 </html>
