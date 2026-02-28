@@ -8,6 +8,7 @@ and extend the application as part of a system development course.
 - Remake from a desktop app to a web app
 - Improve code quality and structure
 - Implement selected new requirements
+- Implement unit tests 
 
 ## Contributors
 - Linn Otendal (linnotendal)
@@ -19,10 +20,11 @@ and extend the application as part of a system development course.
 
 ## Instructions
 - Clone or download the project
-- Open the project from the folder HappyPlantsGrupp2 (the one containing the pom.xml file).
+- Open the project from the folder containing the pom.xml file.
 - Ensure Maven dependencies are loaded: right‑click pom.xml and select Add as Maven Project if needed.
 - Run the application from PlantappApplication.java (PlantApp2/backend/plantapp/src/main/java/com/happyplants2/plantapp/PlantappApplication.java).
 - Open the web app in your browser at http://localhost:8080.
+
 
 ------------------------------------------------------
 # Original documentation
