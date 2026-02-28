@@ -21,7 +21,7 @@ import java.util.List;
  */
 @Service
 public class PlantImportService {
-    @Value("${perenual.api.key} ")
+    @Value("${perenual.api.key}")
     private String apiKey;
     @Autowired
     private PlantTemplateRepository repository;

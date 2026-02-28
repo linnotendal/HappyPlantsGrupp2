@@ -1,7 +1,13 @@
 package com.happyplants2.plantapp;
 
-import com.happyplants2.plantapp.model.Plant;
+import com.happyplants2.plantapp.model.PlantTemplate;
+import com.happyplants2.plantapp.model.User;
+import com.happyplants2.plantapp.model.UserPlant;
 import com.happyplants2.plantapp.repository.PlantRepository;
+import com.happyplants2.plantapp.repository.PlantTemplateRepository;
+import com.happyplants2.plantapp.repository.UserPlantsRepository;
+import com.happyplants2.plantapp.repository.UserRepository;
+import com.happyplants2.plantapp.service.PlantImportService;
 import com.happyplants2.plantapp.service.UserService;
 
 import org.junit.jupiter.api.Disabled;
@@ -9,7 +15,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,9 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional
-@Disabled
 class PlantappApplicationTests {
-//TODO We need to check the class MyPLantsLibraryController också, den används inte i tests just nu.
     /** Den här testklassen provar API-calls genom att använda mockmvc.
      * Transactional betyder att det görs en rollback efter testen är klara.
      * DVS ska inget sparas i databaserna.
@@ -43,6 +49,18 @@ class PlantappApplicationTests {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private UserPlantsRepository userPlantsRepository;
+
+    @Autowired
+    private PlantTemplateRepository plantTemplateRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @MockBean
+    private PlantImportService plantImportService;
 
     @Test
     void contextLoads() {
@@ -133,23 +151,26 @@ class PlantappApplicationTests {
  A user shall be able to add a plant to their library.
  */
     void testBIB01F_shouldAddPlantToLibrary() throws Exception {
-        long before = plantRepository.count();
+        // Create user
+        User testUser = userService.registerUser("library@test.com", "testuser", "123456");
 
-        mockMvc.perform(post("/api/library")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                  "nickname": "TestPlant",
-                                  "speciesId": "1337",
-                                  "lastWatered": "2026-02-20",
-                                  "waterInterval": 1,
-                                  "imageUrl": ""
-                                }
-                                """))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.nickname").value("TestPlant"));
+        // Create session with userId
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("userId", testUser.getId());
 
-        long after = plantRepository.count();
+        // Create PlantTemplate
+        PlantTemplate template = new PlantTemplate(1337, "Rose", "Rosa", "Rosaceae",
+                "frequent", "full sun", "image.jpg", 7);
+        plantTemplateRepository.save(template);
+
+        long before = userPlantsRepository.count();
+
+        // Endpoint: POST /api/user-plants/add/{plantId}
+        mockMvc.perform(post("/api/user-plants/add/" + template.getId())
+                        .session(session))
+                .andExpect(status().isOk());
+
+        long after = userPlantsRepository.count();
         assertEquals(before + 1, after);
     }
 
@@ -159,11 +180,23 @@ class PlantappApplicationTests {
  with a visual representation of time since last watering.
  */
     void testBIB02F_shouldDisplayLibraryWithWateringStatus() throws Exception {
-        Plant plant = new Plant("LibraryPlant", "123", LocalDate.now(), 3, "");
-        plantRepository.save(plant);
-        mockMvc.perform(get("/api/library"))
+        User testUser = userService.registerUser("view@test.com", "viewer", "123456");
+
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("userId", testUser.getId());
+
+        PlantTemplate template = new PlantTemplate(123, "Cactus", "Cactaceae", "Cactaceae",
+                "minimum", "full sun", "cactus.jpg", 14);
+        plantTemplateRepository.save(template);
+
+        UserPlant userPlant = new UserPlant(testUser, template, LocalDate.now());
+        userPlant.setNickName("LibraryPlant");
+        userPlantsRepository.save(userPlant);
+
+        mockMvc.perform(get("/api/user-plants")
+                        .session(session))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[*].nickname").value(hasItem("LibraryPlant")));
+                .andExpect(jsonPath("$[*].nickName").value(hasItem("LibraryPlant")));
     }
 
 
@@ -173,12 +206,23 @@ class PlantappApplicationTests {
  for plants in their library based on plant name or nickname.
  */
     void testBIB03F_shouldSearchPlantsByNameOrNickname() throws Exception {
-        Plant plant = new Plant("LibraryPlant", "123", LocalDate.now(), 3, "");
-        plant = plantRepository.save(plant);
+        User testUser = userService.registerUser("search@test.com", "searcher", "123456");
 
-        mockMvc.perform(get("/api/library/" + plant.getId()))
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("userId", testUser.getId());
+
+        PlantTemplate template = new PlantTemplate(456, "Fern", "Polypodiopsida", "Polypodiaceae",
+                "frequent", "part shade", "fern.jpg", 3);
+        plantTemplateRepository.save(template);
+
+        UserPlant userPlant = new UserPlant(testUser, template, LocalDate.now());
+        userPlant.setNickName("LibraryPlant");
+        userPlant = userPlantsRepository.save(userPlant);
+
+        mockMvc.perform(get("/api/user-plants")
+                        .session(session))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.nickname").value("LibraryPlant"));
+                .andExpect(jsonPath("$[*].nickName").value(hasItem("LibraryPlant")));
     }
 
 
@@ -187,13 +231,24 @@ class PlantappApplicationTests {
  A user shall be able to remove a plant from their library.
  */
     public void testBIB07F_shouldRemovePlantFromLibrary() throws Exception {
-        Plant plant = new Plant("LibraryPlant", "123", LocalDate.now(), 3, "");
-        plant = plantRepository.save(plant);
+        User testUser = userService.registerUser("delete@test.com", "deleter", "123456");
 
-        mockMvc.perform(delete("/api/library/" + plant.getId()))
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("userId", testUser.getId());
+
+        PlantTemplate template = new PlantTemplate(789, "Basil", "Ocimum basilicum", "Lamiaceae",
+                "frequent", "full sun", "basil.jpg", 2);
+        plantTemplateRepository.save(template);
+
+        UserPlant userPlant = new UserPlant(testUser, template, LocalDate.now());
+        userPlant.setNickName("ToDelete");
+        userPlant = userPlantsRepository.save(userPlant);
+
+        mockMvc.perform(delete("/api/user-plants/remove/" + userPlant.getId())
+                        .session(session))
                 .andExpect(status().isOk());
 
-        assertFalse(plantRepository.existsById(plant.getId()));
+        assertFalse(userPlantsRepository.existsById(userPlant.getId()));
     }
 
 
@@ -204,22 +259,26 @@ class PlantappApplicationTests {
  and care level.
  */
     public void testINF01F_shouldDisplayDetailedPlantInformation() throws Exception {
-        Plant plant = new Plant(
-                "MyPlant",
-                "PL123",
-                LocalDate.now(),
-                5,
-                "image.jpg"
-        );
+        User testUser = userService.registerUser("info@test.com", "infouser", "123456");
 
-        plant = plantRepository.save(plant);
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("userId", testUser.getId());
 
-        mockMvc.perform(get("/api/library/" + plant.getId()))
+        PlantTemplate template = new PlantTemplate(999, "Monstera", "Monstera deliciosa", "Araceae",
+                "average", "part shade", "monstera.jpg", 7);
+        plantTemplateRepository.save(template);
+
+        UserPlant userPlant = new UserPlant(testUser, template, LocalDate.now());
+        userPlant.setNickName("MyPlant");
+        userPlant = userPlantsRepository.save(userPlant);
+
+        mockMvc.perform(get("/api/user-plants")
+                        .session(session))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.nickname").value("MyPlant"))
-                .andExpect(jsonPath("$.plantId").value("PL123"))
-                .andExpect(jsonPath("$.waterFrequencyDays").value(5))
-                .andExpect(jsonPath("$.imageURL").value("image.jpg"));
+                .andExpect(jsonPath("$[0].nickName").value("MyPlant"))
+                .andExpect(jsonPath("$[0].plantId").value(999))  // ← ÄNDRAT
+                .andExpect(jsonPath("$[0].commonName").value("Monstera"))  // ← ÄNDRAT
+                .andExpect(jsonPath("$[0].wateringIntervalDays").value(7));  // ← ÄNDRAT
     }
 
     @Disabled("Not implemented yet")
@@ -265,13 +324,23 @@ class PlantappApplicationTests {
  A user shall be able to mark one or more plants as watered.
  */
     public void testSK02F_shouldAllowUserToMarkPlantsAsWatered() throws Exception {
-        Plant plant = new Plant("LibraryPlant", "123", LocalDate.now(), 3, "");
-        plant = plantRepository.save(plant);
+        User testUser = userService.registerUser("water@test.com", "waterer", "123456");
 
-        mockMvc.perform(put("/api/library/" + plant.getId() + "/water"))
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("userId", testUser.getId());
+
+        PlantTemplate template = new PlantTemplate(555, "Thyme", "Thymus vulgaris", "Lamiaceae",
+                "frequent", "full sun", "thyme.jpg", 3);
+        plantTemplateRepository.save(template);
+
+        UserPlant userPlant = new UserPlant(testUser, template, LocalDate.now().minusDays(5));
+        userPlant.setNickName("ThirstyPlant");
+        userPlant = userPlantsRepository.save(userPlant);
+
+        mockMvc.perform(put("/api/user-plants/water/" + userPlant.getId())
+                        .session(session))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.lastWatered").value(LocalDate.now().toString()));
     }
-
 
 }
