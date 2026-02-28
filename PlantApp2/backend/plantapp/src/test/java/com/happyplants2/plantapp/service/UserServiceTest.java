@@ -9,11 +9,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@Disabled
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
     @InjectMocks
@@ -22,14 +22,21 @@ class UserServiceTest {
     private UserRepository userRepository;
     @Mock
     private HttpSession session;
+    @Mock
+    private PasswordEncoder passwordEncoder;
 
     @Test
     void registerUserWithValidInput() {
         String email = "test@test.com";
         when(userRepository.existsByEmail(email)).thenReturn(false);
+        when(passwordEncoder.encode(any())).thenReturn("hashed");
+
         User result= userService.registerUser(email, "test", "test");
+
         assertNotNull(result);
         assertEquals(email, result.getEmail());
+        assertEquals("hashed", result.getPassword());
+
         verify(userRepository, times(1)).save(any(User.class));
     }
 
@@ -42,6 +49,7 @@ class UserServiceTest {
         });
         assertEquals("Email already exists",exception.getMessage() );
     }
+
     @Test
     void registerUserWithInvalidEmailFormat() {
         String email = "test.com";
@@ -103,9 +111,16 @@ class UserServiceTest {
     @Test
     void testLoginUserWithValidAccount() {
         String email = "test@test.com";
-        User mockUser = new User(email, "test", "correct_password");
+        String rawPassword = "test123";
+        String hashedPassword = "hashed_password";
+
+        User mockUser = new User(email, "test", hashedPassword);
+
         when(userRepository.findByEmail(email)).thenReturn(mockUser);
-        User result = userService.loginUser(email, mockUser.getPassword());
+        when(passwordEncoder.matches(rawPassword, hashedPassword)).thenReturn(true);  // ← LÄGG TILL
+
+        User result = userService.loginUser(email, rawPassword);
+
         assertNotNull(result);
         assertEquals(email, result.getEmail());
     }
@@ -113,13 +128,19 @@ class UserServiceTest {
 
     @Test
     void testLogInUserWithInvalidPassword() {
-        String Email = "test@test.com";
-        User mockUser = new User(Email, "test", "correct_password");
-        when(userRepository.findByEmail(Email)).thenReturn(mockUser);
-        Exception exception= assertThrows(IllegalArgumentException.class, () -> {
-            userService.loginUser(Email, "wrong_password");
+        String email = "test@test.com";
+        String rawPassword = "wrong_password";
+        String hashedPassword = "correct_hashed";
+
+        User mockUser = new User(email, "test", hashedPassword);
+
+        when(userRepository.findByEmail(email)).thenReturn(mockUser);
+        when(passwordEncoder.matches(rawPassword, hashedPassword)).thenReturn(false);  // ← LÄGG TILL
+
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            userService.loginUser(email, rawPassword);
         });
-        assertEquals("Wrong password",exception.getMessage() );
+        assertEquals("Wrong password", exception.getMessage());
     }
 
 
