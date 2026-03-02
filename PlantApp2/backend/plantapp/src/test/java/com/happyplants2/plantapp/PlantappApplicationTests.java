@@ -89,12 +89,17 @@ class PlantappApplicationTests {
     }
 
 
-    @Disabled("ANV02F not implemented yet")
     @Test
 /**
  A user shall be able to log out of the application.
  */
-    public void testANV02F_shouldLogoutUserSuccessfully() {
+    public void testANV02F_shouldLogoutUserSuccessfully() throws Exception {
+        userService.registerUser("test@test.com", "testuser", "123456");
+        userService.loginUser("test@test.com", "123456");
+
+        mockMvc.perform(post("/api/users/logout"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("User logout successfully"));
     }
 
 
@@ -119,13 +124,24 @@ class PlantappApplicationTests {
                 .andExpect(content().string("User registered successfully"));
     }
 
-    @Disabled("ANV05F not implemented yet")
     @Test
 /**
  A user shall receive an error message
  if they attempt to create an account without a username.
  */
-    public void testANV05F_shouldRejectAccountWithoutUsername() {
+    public void testANV05F_shouldRejectAccountWithoutUsername() throws Exception {
+        String json = """
+                {
+                    "email": "test@test.com",
+                    "username": "",
+                    "password": "123456"
+                }
+                """;
+
+        mockMvc.perform(post("/api/users/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().is(400));
     }
 
     @Disabled("ANV06F not implemented yet")
@@ -134,16 +150,58 @@ class PlantappApplicationTests {
  A user shall receive an error message when logging in if the entered
  password or email address does not match the database records.
  */
-    public void testANV06F_shouldRejectLoginWithInvalidCredentials() {
+    public void testANV06F_shouldRejectLoginWithInvalidEmail() throws Exception{
+        userService.registerUser("test@test.com", "testuser", "123456");
+        String loginJson = """
+                {
+                    "email": "abc@test.com",
+                    "password": "123456"
+                }
+                """;
+
+        mockMvc.perform(post("/api/users/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginJson))
+                .andExpect(status().is(400));
     }
 
-    @Disabled("ANV07F not implemented yet")
+    @Test
+/**
+ A user shall receive an error message when logging in if the entered
+ password or email address does not match the database records.
+ */
+    public void testANV06F_shouldRejectLoginWithInvalidPassword() throws Exception {
+        userService.registerUser("test@test.com", "testuser", "123456");
+        String loginJson = """
+                {
+                    "email": "test@test.com",
+                    "password": "abcdef"
+                }
+                """;
+
+        mockMvc.perform(post("/api/users/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginJson))
+                .andExpect(status().is(400));
+    }
+
     @Test
 /**
  A user shall receive an error message when
  logging in if no account exists for the entered email address.
  */
-    public void testANV07F_shouldRejectLoginWhenEmailDoesNotExist() {
+    public void testANV07F_shouldRejectLoginWhenEmailDoesNotExist() throws Exception{
+        String loginJson = """
+                {
+                    "email": "test@test.com",
+                    "password": "123456"
+                }
+                """;
+
+        mockMvc.perform(post("/api/users/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginJson))
+                .andExpect(status().is(400));
     }
 
     @Test
@@ -281,14 +339,40 @@ class PlantappApplicationTests {
                 .andExpect(jsonPath("$[0].wateringIntervalDays").value(7));  // ← ÄNDRAT
     }
 
-    @Disabled("Not implemented yet")
     @Test
 /**
  When a user logs in, the watering status of already added plants shall be
  updated and displayed based on the date the plant was last watered and the
  species' water needs.
  */
-    public void testINF02F_shouldUpdateWateringStatusOnLogin() {
+    public void testINF02F_shouldUpdateWateringStatusOnLogin() throws Exception {
+        User testUser = userService.registerUser("test@test.com", "testuser", "123456");
+
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("userId", testUser.getId());
+
+        PlantTemplate template = new PlantTemplate(1337, "Rose", "Rosa", "Rosaceae",
+                "frequent", "full sun", "image.jpg", 7);
+        plantTemplateRepository.save(template);
+
+        UserPlant userPlant = new UserPlant(testUser, template, LocalDate.now());
+        userPlant.setNickName("LibraryPlant");
+        userPlant.setLastWatered(LocalDate.now().minusDays(4));
+        userPlantsRepository.save(userPlant);
+
+        userService.logOutUser(session);
+        userService.loginUser("test@test.com", "123456");
+
+        MockHttpSession session2 = new MockHttpSession();
+        session2.setAttribute("userId", testUser.getId());
+
+        mockMvc.perform(get("/api/user-plants")
+                    .session(session2))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].lastWatered").value(LocalDate.now().minusDays(4).toString()));
+
+        assertEquals(LocalDate.now().minusDays(4), userPlant.getLastWatered());
+        assertEquals(3, userPlant.getDaysUntilWater());
     }
 
 
