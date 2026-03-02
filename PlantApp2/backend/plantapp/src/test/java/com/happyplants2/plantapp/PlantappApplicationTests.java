@@ -143,8 +143,7 @@ class PlantappApplicationTests {
                         .content(json))
                 .andExpect(status().is(400));
     }
-
-    @Disabled("ANV06F not implemented yet")
+    
     @Test
 /**
  A user shall receive an error message when logging in if the entered
