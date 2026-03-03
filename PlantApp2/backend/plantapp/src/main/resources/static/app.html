@@ -13,14 +13,22 @@
         <header>
             <h1>My Happy Plants</h1>
             <nav>
-                <button class="nav-btn active" onclick="showSection('library')" title="View your saved plants">
+                <button class="nav-btn active" onclick="showSection('library')"
+                        data-tooltip="View your saved plants">
                     My Plants
                 </button>
-                <button class="nav-btn " onclick="showSection('discover')" title="View all available plants">
+                <button class="nav-btn" onclick="showSection('discover')"
+                        data-tooltip="View all available plants">
                     Discover
                 </button>
-                <button class="nav-btn " onclick="showSection('recommended')" title="Find new plants based on your library!">Recommendations</button>
-                <button id="logout-btn" class="nav-btn logout" title="Have a good day!">Log out</button>
+                <button class="nav-btn" onclick="showSection('recommended')"
+                        data-tooltip="Find new plants based on your library">
+                    Recommendations
+                </button>
+                <button id="logout-btn" class="nav-btn logout"
+                        data-tooltip="Log out from your account">
+                    Log out
+                </button>
             </nav>
         </header>
 

@@ -137,3 +137,84 @@ button:hover {
 .signup-link a:hover {
     color: #000;
 }
+
+
+
+/*TOOLTIPS*/
+
+/* Password hint icon on register page */
+.label-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 5px;
+}
+.label-row label { margin-bottom: 0; }
+
+.field-hint {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 50%;
+    color: white;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: default;
+    position: relative;
+    flex-shrink: 0;
+    transition: background 0.2s;
+}
+.field-hint:hover { background: rgba(255,255,255,0.6); }
+
+.field-hint::after {
+    content: attr(data-hint);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    background: rgba(30, 50, 15, 0.93);
+    color: #fff;
+    font-size: 0.88em;
+    font-weight: normal;
+    padding: 7px 11px;
+    border-radius: 7px;
+    white-space: normal;
+    width: 210px;
+    text-align: center;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+    transition-delay: 0.2s;
+    z-index: 9999;
+}
+.field-hint::before {
+    content: '';
+    position: absolute;
+    bottom: calc(100% + 2px);
+    left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    border: 5px solid transparent;
+    border-top-color: rgba(30, 50, 15, 0.93);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+    transition-delay: 0.2s;
+    z-index: 9999;
+}
+.field-hint:hover::after,
+.field-hint:hover::before {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* GDPR notice */
+.gdpr-notice {
+    margin-top: 16px;
+    color: rgba(255,255,255,0.7);
+    font-size: 12px;
+    text-align: center;
+    line-height: 1.5;
+}
