@@ -46,17 +46,16 @@ const api = {
 
     async getLibrary() {
         try {
-            const response = await fetch(`${API_BASE_URL}/user-plants`,{
+            const response = await fetch(`${API_BASE_URL}/user-plants`, {
                 credentials: 'include'
             });
             if (!response.ok) throw new Error('Failed to fetch');
 
             const data = await response.json();
-            console.log(data)
             return data.map(plantData => new UserPlant(plantData));
         } catch (error) {
-            console.warn('Using localStorage fallback:', error.message);
-            return this._getLibraryFromLocalStorage();
+            console.warn('Could not load library:', error.message);
+            return [];
         }
     },
 
@@ -112,41 +111,4 @@ const api = {
         const library = await this.getLibrary();
         return library.some(p => p.id === plantId || p.id === plantId.toString());
     },
-/**
-    //Localstorage, can be removed when database is implemented, or keep as backup
-    _getLibraryFromLocalStorage() {
-        const data = localStorage.getItem(STORAGE_KEY);
-        if (!data) return [];
-        return JSON.parse(data).map(p =>
-            new Plant(p.id, p.name, p.species, p.wateringIntervalDays, p.lastWatered)
-        );
-    },
-
-    _addToLibraryLocalStorage(plant) {
-        const library = this._getLibraryFromLocalStorage();
-        if (library.find(p => p.id === plant.id)) return false;
-
-        plant.addToLibrary();
-        library.push(plant);
-        this._saveLibrary(library);
-        return true;
-    },
-
-    _removeFromLibraryLocalStorage(plantId) {
-        const library = this._getLibraryFromLocalStorage();
-        this._saveLibrary(library.filter(p => p.id !== plantId));
-    },
-
-    _waterPlantLocalStorage(plantId) {
-        const library = this._getLibraryFromLocalStorage();
-        const plant = library.find(p => p.id === plantId);
-        if (plant) {
-            plant.lastWatered = new Date();
-            this._saveLibrary(library);
-        }
-    },
-
-    _saveLibrary(library) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(library));
-    }*/
 };

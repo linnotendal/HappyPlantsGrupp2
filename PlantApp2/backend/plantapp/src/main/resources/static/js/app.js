@@ -24,6 +24,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderDiscoverSection();
     renderLibrarySection();
     setupLogout();
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closePlantModal();
+    });
+
+    document.addEventListener('click', (e) => {
+        const modal = document.getElementById('plant-modal');
+        if (e.target === modal) closePlantModal();
+    });
+
+    document.addEventListener('click', () => {
+        document.querySelectorAll('.menu-dropdown').forEach(m => m.classList.remove('open'));
+    });
 });
 
 function showSection(sectionName) {
@@ -93,6 +106,7 @@ async function renderDiscoverSection(plants = null) {
         grid.innerHTML = `<p>Error: ${error.message}</p>`;
     }
 }
+
 async function handleSearch() {
     const query = document.getElementById('plant-search-input').value.trim();
     if (query === "") {
@@ -114,7 +128,7 @@ async function handleSearch() {
 async function handleAddFromDiscover(event, plantData) {
     const btn = event.currentTarget;
     const originalText = btn.innerText;
-    btn.innerText = "Adding...";
+    btn.innerHTML = '<span class="btn-spinner"></span> Adding...';
     btn.disabled = true;
     try {
         // ADD some attributes then
@@ -131,7 +145,6 @@ async function handleAddFromDiscover(event, plantData) {
         alert("Failed to add plant. Please try again.");
     }
 }
-
 
 function setupLogout() {
     const logoutBtn = document.getElementById("logout-btn");
@@ -160,7 +173,7 @@ async function renderLibrarySection(filteredPlants = null) {
     const grid = document.getElementById('library-grid');
     const emptyMsg = document.getElementById('empty-library-msg');
     const sortSelect = document.getElementById('sort-library-select');
-    if (filteredPlants==null){
+    if (filteredPlants == null) {
         grid.innerHTML = '<p>Loading...</p>';
     }
     const library = filteredPlants || await api.getLibrary();
@@ -207,14 +220,13 @@ async function renderLibrarySection(filteredPlants = null) {
             <div class="plant-card ${needsWater ? 'needs-water' : ''}">
             
                 <div class="card-menu">
-                    <button class="menu-btn" onclick="toggleMenu(event, ${plant.userPlantId})">⋮</button>
-                    <div class="menu-dropdown" id="menu-${plant.userPlantId}">
+                        <button class="menu-btn" onclick="toggleMenu(event, ${plant.userPlantId})">⋮</button>                    <div class="menu-dropdown" id="menu-${plant.userPlantId}">
                         <button onclick="editPlant(${plant.userPlantId})">Edit</button>
                         <button onclick="removeFromLibrary(${plant.userPlantId})">Remove</button>
                     </div>
                 </div>
             
-                <h3>${plant.name}</h3>
+                <h3 class="plant-link" onclick="openPlantInfo(${plant.plantId})">${plant.name}</h3>
                     <p><strong>Family:</strong> ${plant.family || 'Unknown'}</p>    
                 <div class="progress-container">
                     <div class="progress-bar">
@@ -234,13 +246,14 @@ async function renderLibrarySection(filteredPlants = null) {
                 </p>
             
                 <div class="card-btn-row">
-                    <button class="btn-water" onclick="waterPlant(${plant.userPlantId})">💧 Water</button>
+                    <button class="btn-water" data-tooltip="Mark as watered today" onclick="waterPlant(${plant.userPlantId})">💧 Water</button>
                 </div>
             
             </div>
             `;
     });
 }
+
 async function handleLibrarySearch() {
     const query = document.getElementById('library-search-input').value.toLowerCase().trim();
     const allLibraryPlants = await api.getLibrary();
@@ -310,6 +323,7 @@ async function addToLibrary(plantId) {
 }
 
 async function removeFromLibrary(backendId) {
+    if (!confirm("Are you sure you want to remove this plant from your library?")) return;
     try {
         const success = await api.removeFromLibrary(backendId);
         if (success) {

@@ -1,7 +1,7 @@
 class UserPlant {
     constructor(data) {
         this.userPlantId = data.userPlantId;
-
+        this.plantId = data.plantId;
         this.commonName = data.commonName || 'Unknown Plant';
         this.scientificName = data.scientificName || '';
         this.imageUrl = data.imageUrl || '';

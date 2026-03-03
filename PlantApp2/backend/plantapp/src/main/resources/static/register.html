@@ -26,11 +26,21 @@
             <input type="text" id="reg-username" placeholder="Enter your username">
         </div>
         <div class="input-group">
-            <label for="reg-password">Password</label>
+            <div class="label-row">
+                <label for="reg-password">Password</label>
+                <span class="field-hint" data-hint="Use at least 8 characters. Include uppercase, lowercase, numbers and symbols for a stronger password.">?</span>
+            </div>
             <input type="password" id="reg-password" placeholder="Enter your password">
         </div>
 
         <button type="submit" class="register-button">Create Account</button>
+
+        <p class="signup-link">Already a member? <a href="index.html">Log in</a></p>
+
+        <p class="gdpr-notice">
+            By creating an account, you agree that your email and username
+            will be stored to provide the service, in accordance with GDPR.
+        </p>
     </form>
 </div>
 <p id="message"></p>
