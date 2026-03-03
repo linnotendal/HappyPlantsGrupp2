@@ -200,6 +200,8 @@ async function renderLibrarySection(filteredPlants = null) {
 
     if (library.length === 0) {
         emptyMsg.classList.remove('hidden');
+        const query = document.getElementById('library-search-input')?.value;
+        emptyMsg.innerText = query ? `No plants found matching "${query}"` : "Your library is empty.";
         return;
     }
     emptyMsg.classList.add('hidden');
