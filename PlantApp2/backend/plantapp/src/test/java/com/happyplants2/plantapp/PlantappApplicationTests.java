@@ -89,12 +89,17 @@ class PlantappApplicationTests {
     }
 
 
-    @Disabled("ANV02F not implemented yet")
     @Test
 /**
  A user shall be able to log out of the application.
  */
-    public void testANV02F_shouldLogoutUserSuccessfully() {
+    public void testANV02F_shouldLogoutUserSuccessfully() throws Exception {
+        userService.registerUser("test@test.com", "testuser", "123456");
+        userService.loginUser("test@test.com", "123456");
+
+        mockMvc.perform(post("/api/users/logout"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("User logout successfully"));
     }
 
 
@@ -119,31 +124,83 @@ class PlantappApplicationTests {
                 .andExpect(content().string("User registered successfully"));
     }
 
-    @Disabled("ANV05F not implemented yet")
     @Test
 /**
  A user shall receive an error message
  if they attempt to create an account without a username.
  */
-    public void testANV05F_shouldRejectAccountWithoutUsername() {
-    }
+    public void testANV05F_shouldRejectAccountWithoutUsername() throws Exception {
+        String json = """
+                {
+                    "email": "test@test.com",
+                    "username": "",
+                    "password": "123456"
+                }
+                """;
 
-    @Disabled("ANV06F not implemented yet")
+        mockMvc.perform(post("/api/users/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().is(400));
+    }
+    
     @Test
 /**
  A user shall receive an error message when logging in if the entered
  password or email address does not match the database records.
  */
-    public void testANV06F_shouldRejectLoginWithInvalidCredentials() {
+    public void testANV06F_shouldRejectLoginWithInvalidEmail() throws Exception{
+        userService.registerUser("test@test.com", "testuser", "123456");
+        String loginJson = """
+                {
+                    "email": "abc@test.com",
+                    "password": "123456"
+                }
+                """;
+
+        mockMvc.perform(post("/api/users/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginJson))
+                .andExpect(status().is(400));
     }
 
-    @Disabled("ANV07F not implemented yet")
+    @Test
+/**
+ A user shall receive an error message when logging in if the entered
+ password or email address does not match the database records.
+ */
+    public void testANV06F_shouldRejectLoginWithInvalidPassword() throws Exception {
+        userService.registerUser("test@test.com", "testuser", "123456");
+        String loginJson = """
+                {
+                    "email": "test@test.com",
+                    "password": "abcdef"
+                }
+                """;
+
+        mockMvc.perform(post("/api/users/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginJson))
+                .andExpect(status().is(400));
+    }
+
     @Test
 /**
  A user shall receive an error message when
  logging in if no account exists for the entered email address.
  */
-    public void testANV07F_shouldRejectLoginWhenEmailDoesNotExist() {
+    public void testANV07F_shouldRejectLoginWhenEmailDoesNotExist() throws Exception{
+        String loginJson = """
+                {
+                    "email": "test@test.com",
+                    "password": "123456"
+                }
+                """;
+
+        mockMvc.perform(post("/api/users/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginJson))
+                .andExpect(status().is(400));
     }
 
     @Test
@@ -281,25 +338,85 @@ class PlantappApplicationTests {
                 .andExpect(jsonPath("$[0].wateringIntervalDays").value(7));  // ← ÄNDRAT
     }
 
-    @Disabled("Not implemented yet")
     @Test
 /**
  When a user logs in, the watering status of already added plants shall be
  updated and displayed based on the date the plant was last watered and the
  species' water needs.
  */
-    public void testINF02F_shouldUpdateWateringStatusOnLogin() {
+    public void testINF02F_shouldUpdateWateringStatusOnLogin() throws Exception {
+        User testUser = userService.registerUser("test@test.com", "testuser", "123456");
+
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("userId", testUser.getId());
+
+        PlantTemplate template = new PlantTemplate(1337, "Rose", "Rosa", "Rosaceae",
+                "frequent", "full sun", "image.jpg", 7);
+        plantTemplateRepository.save(template);
+
+        UserPlant userPlant = new UserPlant(testUser, template, LocalDate.now());
+        userPlant.setNickName("LibraryPlant");
+        userPlant.setLastWatered(LocalDate.now().minusDays(4));
+        userPlantsRepository.save(userPlant);
+
+        userService.logOutUser(session);
+        userService.loginUser("test@test.com", "123456");
+
+        MockHttpSession session2 = new MockHttpSession();
+        session2.setAttribute("userId", testUser.getId());
+
+        mockMvc.perform(get("/api/user-plants")
+                    .session(session2))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].lastWatered").value(LocalDate.now().minusDays(4).toString()));
+
+        assertEquals(LocalDate.now().minusDays(4), userPlant.getLastWatered());
+        assertEquals(3, userPlant.getDaysUntilWater());
     }
 
 
-    @Disabled("not implemented yet")
     @Test
 /**
  User data, associated plants, email address, username, password, and
  settings shall be stored. Data shall be accessible even if the application
  has been closed or used by another user.
  */
-    public void testLA01F_shouldPersistUserDataAcrossSessions() {
+    public void testLA01F_shouldPersistUserDataAcrossSessions() throws Exception {
+        User testUser = userService.registerUser("test@test.com", "testuser", "123456");
+
+        PlantTemplate template = new PlantTemplate(1337, "Rose", "Rosa", "Rosaceae",
+                "frequent", "full sun", "image.jpg", 7);
+        plantTemplateRepository.save(template);
+
+        UserPlant userPlant = new UserPlant(testUser, template, LocalDate.now());
+        userPlant.setNickName("LibraryPlant");
+        userPlant.setLastWatered(LocalDate.now().minusDays(4));
+        userPlantsRepository.save(userPlant);
+        int before = userPlantsRepository.findByUser_Id(testUser.getId()).size();
+
+        User testUser2 = userService.registerUser("test2@test.com", "testuser2", "123456");
+
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("userId", testUser2.getId());
+
+        userService.logOutUser(session);
+
+        String loginJson = """
+                {
+                    "email": "test@test.com",
+                    "password": "123456"
+                }
+                """;
+
+        mockMvc.perform(post("/api/users/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginJson))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.plants").isArray());
+
+        int after = userPlantsRepository.findByUser_Id(testUser.getId()).size();
+
+        assertEquals(before, after);
     }
 
     @Disabled("Not implemented yet")
@@ -311,12 +428,32 @@ class PlantappApplicationTests {
     public void testSOK01F_shouldProvidePlantSuggestionsAndSearch() {
     }
 
-    @Disabled("should probably be checked in frontend?")
     @Test
 /**
  The application shall calculate and display when a plant needs watering through a visual representation.
  */
-    public void testSK01F_shouldCalculateAndDisplayWateringIndicator() {
+    public void testSK01F_shouldCalculateAndDisplayWateringIndicator() throws Exception {
+        User testUser = userService.registerUser("test@test.com", "testuser", "123456");
+
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("userId", testUser.getId());
+
+        PlantTemplate template = new PlantTemplate(1337, "Rose", "Rosa", "Rosaceae",
+                "frequent", "full sun", "image.jpg", 7);
+        plantTemplateRepository.save(template);
+
+        UserPlant userPlant = new UserPlant(testUser, template, LocalDate.now());
+        userPlant.setNickName("LibraryPlant");
+        userPlant.setLastWatered(LocalDate.now().minusDays(4));
+        userPlantsRepository.save(userPlant);
+
+        mockMvc.perform(get("/api/user-plants")
+                        .session(session))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].lastWatered").value(LocalDate.now().minusDays(4).toString()));
+
+        assertEquals(LocalDate.now().minusDays(4), userPlant.getLastWatered());
+        assertEquals(3, userPlant.getDaysUntilWater());
     }
 
     @Test
