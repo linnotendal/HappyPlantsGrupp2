@@ -10,6 +10,8 @@ import com.happyplants2.plantapp.repository.UserPlantsRepository;
 import com.happyplants2.plantapp.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -41,9 +43,12 @@ public class LibraryService {
      * @param userPlantId
      * @return
      */
-    public UserPlant waterPlant(Long userPlantId) {
+    public UserPlant waterPlant(Long userId, Long userPlantId) {
         UserPlant userPlant = userPlantsRepository.findById(userPlantId)
-                .orElseThrow(() -> new IllegalArgumentException("User plant not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User plant not found"));
+        if (!userPlant.getUser().getId().equals(userId)){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not allowe to water this plant");
+        }
         userPlant.setLastWatered(LocalDate.now());
         return userPlantsRepository.save(userPlant);
     }
@@ -72,7 +77,14 @@ public class LibraryService {
      * Removes a plant from users library
      * @param userPlantId
      */
-    public void removePlant(Long userPlantId) {
-        userPlantsRepository.deleteById(userPlantId);
+    public void removePlant(Long userId, Long userPlantId) {
+        UserPlant userPlant = userPlantsRepository.findById(userPlantId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User plant not found"));
+
+        if (!userPlant.getUser().getId().equals(userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not allowed to remove this plant");
+        }
+
+        userPlantsRepository.delete(userPlant);
     }
 }

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * This Class is Responsible to Handle Plant search in Discover section
@@ -25,9 +26,36 @@ public class DiscoverService {
                 findByCommonNameContainingIgnoreCase(plantName).stream().map(this::convertToDto).toList();
     }
     private PlantResponseDTO convertToDto (PlantTemplate plantTemplate) {
-        return new PlantResponseDTO(plantTemplate.getId(),plantTemplate.getCommonName(),
-                plantTemplate.getScientificName(), plantTemplate.getFamily(), plantTemplate.getWatering(),
-                plantTemplate.getSunlight(), plantTemplate.getImageUrl());
+        String careLevel=calculateCareLevel(plantTemplate.getWaterFrequencyDays(),plantTemplate.getSunlight());
+
+        return new PlantResponseDTO(
+                plantTemplate.getId(),
+                plantTemplate.getCommonName(),
+                plantTemplate.getScientificName(),
+                plantTemplate.getFamily(),
+                plantTemplate.getWatering(),
+                plantTemplate.getSunlight(),
+                plantTemplate.getImageUrl(),
+                plantTemplate.getWaterFrequencyDays(),
+                careLevel);
+    }
+    private String calculateCareLevel(Integer waterFrequencyDays, String sunlight){
+        if (waterFrequencyDays==null){
+            return "Unknown";
+        }
+        String sun;
+        if (sunlight==null){
+            sun="";
+        } else {
+            sun=sunlight.toLowerCase();
+        }
+        boolean highSun= sun.contains("full") || sun.contains("direct") || sun.contains("bright");
+        boolean lowSun  = sun.contains("low") || sun.contains("shade") || sun.contains("indirect");
+
+        if (waterFrequencyDays <=5||highSun)return "hard";
+        if (waterFrequencyDays<=9) return "Medium";
+        if (waterFrequencyDays>= 10 || lowSun)return "Easi";
+        return "Medium";
     }
     public List<PlantResponseDTO> getAllPlants() {
         return plantTemplateRepository.findAll()
