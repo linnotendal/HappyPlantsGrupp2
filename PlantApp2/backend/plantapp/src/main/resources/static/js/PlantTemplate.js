@@ -21,7 +21,9 @@ class PlantTemplate{
 
 
     getWateringDescription() {
-        if (!this.waterFrequencyDays) return "Not specified";
+        if (!this.waterFrequencyDays || this.waterFrequencyDays <= 0){
+         return "Not specified";
+         }
         return `Every ${this.waterFrequencyDays} days`;
     }
 
@@ -73,7 +75,7 @@ class PlantTemplate{
 
                     <div class="info-item">
                         <span class="label">Sunlight</span>
-                        <span>${this.getSunlightShort()}</span>
+                        <span>${this.getSunlightShort()  || "Not specified"}</span>
                     </div>
 
                 </div>
