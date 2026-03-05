@@ -1,6 +1,6 @@
 //UI logic only. Does not touch data directly, uses api.js for everything.
 
-const DEV_MODE = true;
+const DEV_MODE = false;
 
 document.addEventListener('DOMContentLoaded', async () => {
 
