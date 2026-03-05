@@ -7,7 +7,8 @@ class PlantTemplate{
                     waterFrequencyDays,
                     family,
                     sunlight,
-                    default_image
+                    default_image,
+                    care_level
                 }) {
         this.id = id;
         this.common_name = common_name;
@@ -17,11 +18,14 @@ class PlantTemplate{
         this.family = family;
         this.sunlight = sunlight;
         this.default_image = "tempplant.jpg";
+        this.care_level=care_level|| "Unknown";
     }
 
 
     getWateringDescription() {
-        if (!this.waterFrequencyDays) return "Not specified";
+        if (!this.waterFrequencyDays || this.waterFrequencyDays <= 0){
+         return "Not specified";
+         }
         return `Every ${this.waterFrequencyDays} days`;
     }
 
@@ -62,6 +66,11 @@ class PlantTemplate{
                     </div>
 
                     <div class="info-item">
+                      <span class="label">Care level</span>
+                      <span>${this.care_level}</span>
+                    </div>
+
+                    <div class="info-item">
                         <span class="label">Watering</span>
                         <span>${this.watering || 'Normal'}</span>
                     </div>
@@ -73,7 +82,7 @@ class PlantTemplate{
 
                     <div class="info-item">
                         <span class="label">Sunlight</span>
-                        <span>${this.getSunlightShort()}</span>
+                        <span>${this.getSunlightShort()  || "Not specified"}</span>
                     </div>
 
                 </div>

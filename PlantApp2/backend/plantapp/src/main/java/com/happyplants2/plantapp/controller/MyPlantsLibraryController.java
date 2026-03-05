@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+
 import java.util.List;
 
 @RestController
@@ -42,12 +43,16 @@ public class MyPlantsLibraryController {
         if(userId == null) {
             return ResponseEntity.status(401).body("User is not logged in");
         }
-        return ResponseEntity.ok(myPlantsLibraryService.waterPlant(userPlantId));
+        return ResponseEntity.ok(myPlantsLibraryService.waterPlant(userId, userPlantId));
     }
 
     @DeleteMapping("/remove/{userPlantId}")
-    public ResponseEntity<Void> deletePlant(@PathVariable Long userPlantId) {
-        myPlantsLibraryService.removePlant(userPlantId);
+    public ResponseEntity<?> deletePlant(@PathVariable Long userPlantId, HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId==null){
+            return ResponseEntity.status(401).body("user is not logge in");
+        }
+        myPlantsLibraryService.removePlant(userId,userPlantId);
         return ResponseEntity.ok().build();
     }
 }
