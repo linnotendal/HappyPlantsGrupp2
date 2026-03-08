@@ -10,7 +10,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
+import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -180,5 +180,33 @@ class UserServiceTest {
             userService.deleteUser(userId);
         });
         assertEquals("User with this id is not found",exception.getMessage() );
+    }
+
+    @Test
+    void testLogoutUserInvalidatesSession() {
+        userService.logOutUser(session);
+        verify(session, times(1)).invalidate();
+    }
+
+    @Test
+    void testGetUserByIdReturnsCorrectUser() {
+        long userId = 1L;
+        User mockUser = new User("test@test.com", "testuser", "hashed");
+        when(userRepository.findById(userId)).thenReturn(Optional.of(mockUser));
+
+        User result = userService.getUserById(userId);
+
+        assertNotNull(result);
+        assertEquals("test@test.com", result.getEmail());
+    }
+
+    @Test
+    void testGetUserByIdThrowsWhenNotFound() {
+        long userId = 99L;
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            userService.getUserById(userId);
+        });
     }
 }

@@ -419,13 +419,16 @@ class PlantappApplicationTests {
         assertEquals(before, after);
     }
 
-    @Disabled("Not implemented yet")
     @Test
 /**
  A user shall be able to see suggestions for different plants and search
  for plants based on plant name.
  */
-    public void testSOK01F_shouldProvidePlantSuggestionsAndSearch() {
+    public void testSOK01F_shouldReturnPlantsMatchingSearchName() throws Exception {
+        mockMvc.perform(get("/api/discover/search")
+                        .param("name", "Monstera"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray());
     }
 
     @Test
@@ -480,4 +483,13 @@ class PlantappApplicationTests {
                 .andExpect(jsonPath("$.lastWatered").value(LocalDate.now().toString()));
     }
 
+    /**
+     * The application shall return 401 Unauthorized when a user
+     * attempts to access their profile without being logged in.
+     */
+    @Test
+    void testGetCurrentUser_shouldReturn401WhenNotLoggedIn() throws Exception {
+        mockMvc.perform(get("/api/users/me"))
+                .andExpect(status().isUnauthorized());
+    }
 }
