@@ -141,7 +141,94 @@ class PlantappApplicationTests {
         mockMvc.perform(post("/api/users/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
-                .andExpect(status().is(400));
+                .andExpect(status().is(400))
+                .andExpect(content().string("Username is required"));
+    }
+
+    @Test
+/**
+ A user shall receive an error message
+ if they attempt to create an account without an email.
+ */
+    public void testANV05F_shouldRejectAccountWithoutEmail() throws Exception {
+        String json = """
+                {
+                    "email": "",
+                    "username": "testuser",
+                    "password": "123456"
+                }
+                """;
+
+        mockMvc.perform(post("/api/users/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().is(400))
+                .andExpect(content().string("Email is required"));
+    }
+
+    @Test
+/**
+ A user shall receive an error message
+ if they attempt to create an account without a password.
+ */
+    public void testANV05F_shouldRejectAccountWithoutPassword() throws Exception {
+        String json = """
+                {
+                    "email": "test@test.com",
+                    "username": "testuser",
+                    "password": ""
+                }
+                """;
+
+        mockMvc.perform(post("/api/users/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().is(400))
+                .andExpect(content().string("Password is required"));
+    }
+
+    @Test
+/**
+ A user shall receive an error message
+ if they attempt to create an account with an invalid email.
+ */
+    public void testANV05F_shouldRejectAccountWithInvalidEmail() throws Exception {
+        String json = """
+                {
+                    "email": "test.com",
+                    "username": "testuser",
+                    "password": "123456"
+                }
+                """;
+
+        mockMvc.perform(post("/api/users/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().is(400))
+                .andExpect(content().string("Invalid email format"));
+    }
+
+    @Test
+/**
+ A user shall receive an error message
+ if they attempt to create an account with an email already in use.
+ */
+    public void testANV05F_shouldRejectAccountWithEmailAlreadyInUse() throws Exception {
+        userService.registerUser("test@test.com", "testuser1", "123456");
+
+        String json = """
+                {
+                    "email": "test@test.com",
+                    "username": "testuser2",
+                    "password": "123456"
+                }
+                """;
+
+        mockMvc.perform(post("/api/users/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().is(400))
+                .andExpect(content().string("Email already exists"));
     }
     
     @Test
@@ -161,7 +248,8 @@ class PlantappApplicationTests {
         mockMvc.perform(post("/api/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(loginJson))
-                .andExpect(status().is(400));
+                .andExpect(status().is(400))
+                .andExpect(content().string("User with this email is not found"));
     }
 
     @Test
@@ -181,7 +269,8 @@ class PlantappApplicationTests {
         mockMvc.perform(post("/api/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(loginJson))
-                .andExpect(status().is(400));
+                .andExpect(status().is(400))
+                .andExpect(content().string("Wrong password"));
     }
 
     @Test
@@ -200,7 +289,8 @@ class PlantappApplicationTests {
         mockMvc.perform(post("/api/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(loginJson))
-                .andExpect(status().is(400));
+                .andExpect(status().is(400))
+                .andExpect(content().string("User with this email is not found"));
     }
 
     @Test
