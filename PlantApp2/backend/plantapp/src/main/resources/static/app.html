@@ -49,6 +49,7 @@
             <section id="library-section">
                 <h2>My Plants</h2>
                 <p class="section-description">All your beautiful plants in one place</p>
+                <div id="room-tabs" class="room-tabs"></div>
                 <div class="search-box">
                     <input type="text" id="library-search-input" placeholder="Search in my plants..."
                         oninput="handleLibrarySearch()">
@@ -94,7 +95,13 @@
             <span class="close-btn" onclick="closePlantAddModal()">&times;</span>
             <h3 id="modal-plant-name">🌿 Add Plant</h3>
             <label for="modal-location">Would you like to specify the  location:</label>
-            <input type="text" id="modal-location" placeholder="e.g., Living Room">
+            <select id="modal-location">
+                <option value="" selected>Select room (optional)</option>
+                <option value="Living Room">Living Room</option>
+                <option value="Bedroom">Bedroom</option>
+                <option value="Kitchen">Kitchen</option>
+                <option value="Office">Office</option>
+            </select>
             <button id="modal-add-btn">Add to My Plants</button>
         </div>
     </div>

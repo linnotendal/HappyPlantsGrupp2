@@ -681,7 +681,6 @@ flex-grow: 1;
 
 section { position: relative; }
 
-/* Add plants modal*/
 /* Add Plant Modal */
 
 #plant-add-modal {
@@ -742,15 +741,34 @@ section { position: relative; }
     color: #555;
 }
 
-/* input */
-#modal-location {
-    width: 100%;
-    padding: 10px 12px;
-    border-radius: 8px;
-    border: 1px solid #cfd8c6;
-    font-size: 0.95em;
-    margin-bottom: 18px;
-    transition: border 0.2s ease, box-shadow 0.2s ease;
+/* Room Tabs */
+
+.room-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.room-tab {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 2px solid #6b9c38;
+    background: white;
+    color: #405e21;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: all 0.2s ease;
+}
+
+.room-tab:hover {
+    background: #6b9c38;
+    color: white;
+}
+
+.room-tab.active {
+    background: #405e21;
+    color: white;
 }
 
 #modal-location:focus {
@@ -793,4 +811,70 @@ section { position: relative; }
         opacity: 1;
         transform: translateY(0) scale(1);
     }
+}
+
+#modal-location {
+    width: 100%;
+    padding: 10px 12px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    border: 2px solid #6b9c38;
+    background: #f9f9f9;
+    color: #405e21;
+    font-size: 0.95em;
+    transition: all 0.2s ease;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    cursor: pointer;
+}
+
+#modal-location:focus {
+    outline: none;
+    border-color: #405e21;
+    box-shadow: 0 0 0 3px rgba(64,94,33,0.2);
+    background: #fff;
+}
+
+#modal-location-wrapper {
+    position: relative;
+}
+
+#modal-location-wrapper::after {
+    content: '▾';
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #405e21;
+    pointer-events: none;
+    font-size: 0.9em;
+}
+/* Toast container*/
+.toast-container {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+}
+
+.toast-message {
+    background-color: #333;
+    color: #fff;
+    padding: 12px 25px;
+    border-radius: 30px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    margin-bottom: 10px;
+    animation: fadeInOut 3s forwards;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+@keyframes fadeInOut {
+    0% { opacity: 0; transform: translateY(20px); }
+    15% { opacity: 1; transform: translateY(0); }
+    85% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(-20px); }
 }

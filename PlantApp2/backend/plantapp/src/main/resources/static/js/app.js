@@ -1,7 +1,7 @@
 //UI logic only. Does not touch data directly, uses api.js for everything.
 
 const DEV_MODE = true;
-let selectedPlantForAdd = null;
+let currentActiveRoom = "All";
 document.addEventListener('DOMContentLoaded', async () => {
 
     if (!DEV_MODE) {
@@ -52,6 +52,7 @@ function showSection(sectionName) {
         document.querySelector('.nav-btn[onclick*="discover"]').classList.add('active');
         renderDiscoverSection();
     } else {
+        currentActiveRoom = "All";
         document.getElementById('library-section').classList.remove('hidden');
         document.querySelector('.nav-btn[onclick*="library"]').classList.add('active');
         renderLibrarySection();
@@ -97,7 +98,6 @@ async function renderDiscoverSection(plants = null) {
                 </div>
             `;
             const addBtn = card.querySelector('.btn-add');
-            //addBtn.addEventListener('click', (event) => handleAddFromDiscover(event, plant));
             addBtn.addEventListener('click', () => openPlantAddModal(plant));
             grid.appendChild(card);
         });
@@ -131,7 +131,6 @@ async function handleAddFromDiscover(event, plantData) {
     btn.innerHTML = '<span class="btn-spinner"></span> Adding...';
     btn.disabled = true;
     try {
-        // ADD some attributes then
         const plantTemplate = new PlantTemplate(plantData);
         await api.addToLibrary(plantTemplate);
         btn.innerText = "✓ Added";
@@ -169,6 +168,44 @@ function setupLogout() {
     });
 }
 
+function renderRoomTabs(library) {
+    const container = document.getElementById("room-tabs");
+    container.innerHTML = "";
+    const rooms = [...new Set(
+        library
+            .map(p => p.location)
+            .filter(r => r && r !== "")
+    )];
+    const allTabs = ["All", ...rooms];
+    allTabs.forEach(room => {
+
+        const tab = document.createElement("button");
+        tab.className = "room-tab";
+        if (room === currentActiveRoom) {
+            tab.classList.add("active");
+        }
+        tab.textContent = room;
+
+        tab.onclick = () => {
+            currentActiveRoom = room;
+            filterLibraryByRoom(room);
+        };
+
+        container.appendChild(tab);
+    });
+}
+
+async function filterLibraryByRoom(room) {
+    currentActiveRoom = room;
+    const library = await api.getLibrary();
+    if (room === "All") {
+        renderLibrarySection(library);
+        return;
+    }
+    const filtered = library.filter(p => p.location === room);
+    renderLibrarySection(filtered);
+}
+
 async function renderLibrarySection(filteredPlants = null) {
     const grid = document.getElementById('library-grid');
     const emptyMsg = document.getElementById('empty-library-msg');
@@ -176,7 +213,10 @@ async function renderLibrarySection(filteredPlants = null) {
     if (filteredPlants == null) {
         grid.innerHTML = '<p>Loading...</p>';
     }
-    const library = filteredPlants || await api.getLibrary();
+    const fullLibrary = await api.getLibrary();
+    renderRoomTabs(fullLibrary);
+
+    const library = filteredPlants || fullLibrary;
 
     if (library && library.length > 0) {
         const sortBy = sortSelect.value;
@@ -257,22 +297,28 @@ async function renderLibrarySection(filteredPlants = null) {
 }
 
 async function handleLibrarySearch() {
-    const query = document.getElementById('library-search-input').value.toLowerCase().trim();
-    const allLibraryPlants = await api.getLibrary();
-    if (query === "") {
-        renderLibrarySection(allLibraryPlants);
-        return;
-    }
-    const filtered = allLibraryPlants.filter(plant => {
-        const nameMatch = plant.name.toLowerCase().includes(query);
-        const familyMatch = plant.family && plant.family.toLowerCase().includes(query);
-        return nameMatch || familyMatch;
+    const searchInput = document.getElementById('library-search-input');
+    const query = searchInput.value.toLowerCase().trim();
+
+    let library = await api.getLibrary();
+    const filteredResults = library.filter(plant => {
+        const isInRoom = (currentActiveRoom === "All" || plant.location === currentActiveRoom);
+        const matchesQuery = !query ||
+            (plant.name && plant.name.toLowerCase().includes(query)) ||
+            (plant.family && plant.family.toLowerCase().includes(query));
+
+        return isInRoom && matchesQuery;
     });
-    renderLibrarySection(filtered);
+    renderLibrarySection(filteredResults);
+    document.getElementById('library-search-input').focus();
 }
 async function handleSortChange() {
     const sortBy = document.getElementById('sort-library-select').value;
     let library = await api.getLibrary();
+
+    if (currentActiveRoom !== "All") {
+        library = library.filter(p => p.location === currentActiveRoom);
+    }
 
     if (!library || library.length === 0) return;
 
@@ -330,9 +376,14 @@ async function removeFromLibrary(backendId) {
         const success = await api.removeFromLibrary(backendId);
         if (success) {
             console.log("Removed from server successfully");
-            await api.getLibrary();
-            await renderLibrarySection();
-        }
+            const updatedLibrary = await api.getLibrary();
+            if (currentActiveRoom !== "All") {
+                const filtered = updatedLibrary.filter(p => p.location === currentActiveRoom);
+                renderLibrarySection(filtered);
+            } else {
+                renderLibrarySection(updatedLibrary);
+            }
+            showSuccessNotification("Plant removed successfully");        }
     } catch (error) {
         console.error("Failed to remove plant:", error);
     }
@@ -343,7 +394,15 @@ async function waterPlant(userPlantId) {
     try {
         const success = await api.waterPlant(userPlantId);
         if (success) {
-            console.log("Watering successes")
+            console.log("Watering successes");
+            const updatedLibrary = await api.getLibrary();
+            if (currentActiveRoom !== "All") {
+                const filtered = updatedLibrary.filter(p => p.location === currentActiveRoom);
+                renderLibrarySection(filtered);
+            } else {
+                renderLibrarySection(updatedLibrary);
+            }
+            showSuccessNotification("Plant watered! 💧");
             await renderLibrarySection();
         }
     } catch (error) {
@@ -384,11 +443,30 @@ function openPlantAddModal(plantData) {
 function closePlantAddModal() {
     document.getElementById('plant-add-modal').classList.add('hidden');
 }
+function showSuccessNotification(message) {
+    let container = document.querySelector('.toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'toast-container';
+        document.body.appendChild(container);
+    }
+    const toast = document.createElement('div');
+    toast.className = 'toast-message';
+    toast.innerHTML = `🌿 <span>${message}</span>`;
+
+    container.appendChild(toast);
+
+    setTimeout(() => {
+        toast.remove();
+        if (container.childNodes.length === 0) container.remove();
+    }, 3000);
+}
 document.getElementById('modal-add-btn').addEventListener('click', async () => {
     const location = document.getElementById('modal-location').value.trim();
 
     try {
         await api.addToLibrary(selectedPlantData, location);
+        showSuccessNotification(`${selectedPlantData.common_name} added to your library!`);
         closePlantAddModal();
         renderLibrarySection();
     } catch (error) {
