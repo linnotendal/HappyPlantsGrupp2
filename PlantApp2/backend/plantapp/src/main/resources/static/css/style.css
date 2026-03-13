@@ -681,4 +681,116 @@ flex-grow: 1;
 
 section { position: relative; }
 
+/* Add plants modal*/
+/* Add Plant Modal */
 
+#plant-add-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    backdrop-filter: blur(3px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+}
+
+#plant-add-modal.hidden {
+    display: none;
+}
+
+#plant-add-modal .modal-content {
+    width: 420px;
+    max-width: 90%;
+    background: white;
+    border-radius: 18px;
+    padding: 30px 28px 28px 28px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.18);
+    position: relative;
+    animation: modalPop 0.25s ease;
+}
+
+/* close button */
+#plant-add-modal .close-btn {
+    position: absolute;
+    right: 16px;
+    top: 14px;
+    font-size: 22px;
+    cursor: pointer;
+    color: #777;
+    transition: all 0.2s ease;
+}
+
+#plant-add-modal .close-btn:hover {
+    color: #d44;
+    transform: scale(1.15);
+}
+
+/* title */
+#plant-add-modal h3 {
+    font-family: 'LogoFont', serif;
+    color: #405e21;
+    font-size: 1.5em;
+    margin-bottom: 15px;
+}
+
+/* label */
+#plant-add-modal label {
+    display: block;
+    font-size: 0.9em;
+    margin-bottom: 6px;
+    color: #555;
+}
+
+/* input */
+#modal-location {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #cfd8c6;
+    font-size: 0.95em;
+    margin-bottom: 18px;
+    transition: border 0.2s ease, box-shadow 0.2s ease;
+}
+
+#modal-location:focus {
+    outline: none;
+    border-color: #6b9c38;
+    box-shadow: 0 0 0 2px rgba(107,156,56,0.15);
+}
+
+/* add button */
+#modal-add-btn {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    background: #405e21;
+    color: white;
+    font-size: 0.95em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#modal-add-btn:hover {
+    background: #6b9c38;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+#modal-add-btn:active {
+    transform: translateY(0);
+}
+
+/* animation */
+@keyframes modalPop {
+    from {
+        opacity: 0;
+        transform: translateY(15px) scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}

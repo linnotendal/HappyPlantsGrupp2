@@ -54,7 +54,7 @@ public class LibraryService {
      * @param plantTemplateId
      * @return
      */
-    public UserPlant addPlantToUser(Long userId, Integer plantTemplateId) {
+    public UserPlant addPlantToUser(Long userId, Integer plantTemplateId, String location) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
@@ -63,6 +63,7 @@ public class LibraryService {
         UserPlant userPlant = new UserPlant();
         userPlant.setUser(user);
         userPlant.setPlant(plantTemplate);
+        userPlant.setLocation(location);
         userPlant.setLastWatered(LocalDate.now());
 
         return userPlantsRepository.save(userPlant);

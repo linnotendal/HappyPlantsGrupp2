@@ -1,7 +1,7 @@
 //UI logic only. Does not touch data directly, uses api.js for everything.
 
-const DEV_MODE = false;
-
+const DEV_MODE = true;
+let selectedPlantForAdd = null;
 document.addEventListener('DOMContentLoaded', async () => {
 
     if (!DEV_MODE) {
@@ -97,8 +97,8 @@ async function renderDiscoverSection(plants = null) {
                 </div>
             `;
             const addBtn = card.querySelector('.btn-add');
-            addBtn.addEventListener('click', (event) => handleAddFromDiscover(event, plant));
-
+            //addBtn.addEventListener('click', (event) => handleAddFromDiscover(event, plant));
+            addBtn.addEventListener('click', () => openPlantAddModal(plant));
             grid.appendChild(card);
         });
     } catch (error) {
@@ -374,3 +374,25 @@ function closePlantModal() {
     document.getElementById('plant-modal')
         .classList.add('hidden');
 }
+function openPlantAddModal(plantData) {
+    selectedPlantData = plantData;
+
+    document.getElementById('modal-plant-name').innerText = plantData.common_name;
+    document.getElementById('plant-add-modal').classList.remove('hidden');
+}
+
+function closePlantAddModal() {
+    document.getElementById('plant-add-modal').classList.add('hidden');
+}
+document.getElementById('modal-add-btn').addEventListener('click', async () => {
+    const location = document.getElementById('modal-location').value.trim();
+
+    try {
+        await api.addToLibrary(selectedPlantData, location);
+        closePlantAddModal();
+        renderLibrarySection();
+    } catch (error) {
+        console.error(error);
+        alert("Failed to add plant. Please try again.");
+    }
+});

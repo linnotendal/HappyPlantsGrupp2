@@ -59,15 +59,18 @@ const api = {
         }
     },
 
-    async addToLibrary(plantTemplate) {
+    async addToLibrary(plantTemplate, location = "") {
         try {
-            const response = await fetch(`${API_BASE_URL}/user-plants/add/${plantTemplate.id}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include'
-            });
+            const response = await fetch(
+                `${API_BASE_URL}/user-plants/add/${plantTemplate.id}?location=${encodeURIComponent(location)}`,
+                {
+                    method: 'POST',
+                    credentials: 'include'
+                }
+            );
 
             if (!response.ok) throw new Error('Backend not available');
+
             const data = await response.json();
             return new UserPlant(data);
         } catch (error) {

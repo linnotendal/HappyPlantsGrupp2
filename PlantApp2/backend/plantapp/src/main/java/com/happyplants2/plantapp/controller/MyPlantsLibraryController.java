@@ -17,7 +17,7 @@ import java.util.List;
 public class MyPlantsLibraryController {
     @Autowired
     private LibraryService myPlantsLibraryService;
-    // tested
+
     @GetMapping
     public ResponseEntity<?> getUserPlants(HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
@@ -26,16 +26,18 @@ public class MyPlantsLibraryController {
         }
         return ResponseEntity.ok(myPlantsLibraryService.getUserPlants(userId));
     }
-    // tested
+
     @PostMapping("/add/{plantId}")
-    public ResponseEntity<?> addPlant(@PathVariable Integer plantId, HttpSession session) {
+    public ResponseEntity<?> addPlant(@PathVariable Integer plantId, @RequestParam(required = false) String location,
+                                      HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
         if(userId == null) {
             return ResponseEntity.status(401).body("User is not logged in");
         }
-        return ResponseEntity.ok(myPlantsLibraryService.addPlantToUser(userId, plantId));
+        UserPlant userPlant = myPlantsLibraryService.addPlantToUser(userId, plantId, location);
+        return ResponseEntity.ok(userPlant);
     }
-    //Tested
+
     @PutMapping("/water/{userPlantId}")
     public ResponseEntity<?> waterPlant(@PathVariable Long userPlantId, HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
