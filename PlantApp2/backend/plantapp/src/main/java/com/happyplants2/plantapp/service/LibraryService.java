@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 /**
@@ -75,5 +76,38 @@ public class LibraryService {
      */
     public void removePlant(Long userPlantId) {
         userPlantsRepository.deleteById(userPlantId);
+    }
+
+    /**
+     * Does not in fact give the user a suggestion based on content. Instead it gives a random flower that the user
+     * does not already have in the library. Since family is always null in the API we can't use this.
+     * @param userId self explanatory
+     * @return a random plant
+     */
+    public PlantTemplate getSuggestedContent(Long userId) {
+        List<UserPlant> userPlants = userPlantsRepository.findByUser_Id(userId);
+        List<Integer> ownedPlantIds = userPlants.stream()
+                .map(up -> up.getPlant().getId())
+                .toList();
+
+        List<PlantTemplate> allPlants = plantTemplateRepository.findAll();
+
+        List<PlantTemplate> candidates = allPlants.stream()
+                .filter(p -> !ownedPlantIds.contains(p.getId()))
+                .toList();
+
+        if (candidates.isEmpty()) {
+            return null;
+        }
+
+        Random random = new Random();
+        return candidates.get(random.nextInt(candidates.size()));
+    }
+
+    public PlantTemplate getSuggestedPopularity(Long userId) {
+        return userPlantsRepository.findMostPopularNotOwned(userId)
+                .stream()
+                .findFirst()
+                .orElse(null);
     }
 }
