@@ -43,20 +43,106 @@ function showSection(sectionName) {
 
     document.getElementById('discover-section').classList.add('hidden');
     document.getElementById('library-section').classList.add('hidden');
+    document.getElementById('recommended-section').classList.add('hidden');
 
     document.querySelectorAll('.nav-btn')
         .forEach(btn => btn.classList.remove('active'));
 
     if (sectionName === 'discover') {
+
         document.getElementById('discover-section').classList.remove('hidden');
         document.querySelector('.nav-btn[onclick*="discover"]').classList.add('active');
         renderDiscoverSection();
-    } else {
+
+    } else if (sectionName === 'library') {
+
         currentActiveRoom = "All";
         document.getElementById('library-section').classList.remove('hidden');
         document.querySelector('.nav-btn[onclick*="library"]').classList.add('active');
         renderLibrarySection();
+
+    } else if (sectionName === 'recommended') {
+
+        document.getElementById('recommended-section').classList.remove('hidden');
+        document.querySelector('.nav-btn[onclick*="recommended"]').classList.add('active');
+        renderRecommendedSection();
+
     }
+}
+async function renderRecommendedSection(plants = null) {
+
+    const grid = document.getElementById('recommended-grid');
+    grid.innerHTML = "<p>Loading recommendations...</p>";
+
+    try {
+
+        if (plants === null) {
+            plants = await api.getRecommendedPlants();
+        }
+
+        grid.innerHTML = "";
+
+        if (!plants || plants.length === 0) {
+            grid.innerHTML = "<p>No recommendations available.</p>";
+            return;
+        }
+
+        plants.forEach(plantData => {
+
+            const plant = new PlantTemplate(plantData);
+
+            const card = document.createElement("div");
+            card.className = "plant-card custom-layout";
+
+            card.innerHTML = `
+                <h3 class="plant-title plant-link" onclick="openPlantInfo(${plant.id})">
+                    ${plant.common_name}
+                </h3>
+
+                <div class="plant-image-container">
+                    ${
+                        plant.default_image
+                        ? `<img src="${plant.default_image}" alt="${plant.common_name}">`
+                        : `<div class="no-image">🌿</div>`
+                    }
+                </div>
+
+                <div class="plant-details">
+                    <p><strong>Scientific:</strong><br>${plant.scientific_name || "Unknown"}</p>
+                    <p><strong>Family:</strong><br>${plant.family || "Unknown"}</p>
+                </div>
+
+                <div class="card-btn-row">
+                    <button class="btn-add">+ Add to My Plants</button>
+                </div>
+            `;
+
+            const addBtn = card.querySelector(".btn-add");
+            addBtn.addEventListener("click", () => openPlantAddModal(plant));
+
+            grid.appendChild(card);
+
+        });
+
+    } catch (error) {
+
+        grid.innerHTML = "<p>Error loading recommendations.</p>";
+        console.error(error);
+
+    }
+}
+
+async function handleRecommendedSearch() {
+
+    const query = document.getElementById("plant-search-input").value.trim();
+
+    if (query === "") {
+        renderRecommendedSection();
+        return;
+    }
+
+    const plants = await api.searchPlantsFromBackend(query);
+    renderRecommendedSection(plants);
 }
 
 async function renderDiscoverSection(plants = null) {
