@@ -69,56 +69,55 @@ function showSection(sectionName) {
 
     }
 }
-async function renderRecommendedSection(plants = null) {
+async function renderRecommendedSection() {
 
     const grid = document.getElementById('recommended-grid');
     grid.innerHTML = "<p>Loading recommendations...</p>";
 
     try {
 
-        if (plants === null) {
-            plants = await api.getRecommendedPlants();
-        }
+        const contentSuggestion = await api.getContentSuggestion();
+        const popularSuggestion = await api.getPopularSuggestion();
 
         grid.innerHTML = "";
 
-        if (!plants || plants.length === 0) {
-            grid.innerHTML = "<p>No recommendations available.</p>";
-            return;
-        }
+        const suggestions = [
+            { title: "Try something new!", data: contentSuggestion },
+            { title: "Popular among users", data: popularSuggestion }
+        ];
 
-        plants.forEach(plantData => {
+        suggestions.forEach(suggestion => {
 
-            const plant = new PlantTemplate(plantData);
+            if (!suggestion.data) return;
+
+            const plant = new PlantTemplate(suggestion.data);
 
             const card = document.createElement("div");
             card.className = "plant-card custom-layout";
 
             card.innerHTML = `
-                <h3 class="plant-title plant-link" onclick="openPlantInfo(${plant.id})">
-                    ${plant.common_name}
-                </h3>
+                <h2>${suggestion.title}</h2>
 
                 <div class="plant-image-container">
                     ${
-                        plant.default_image
-                        ? `<img src="${plant.default_image}" alt="${plant.common_name}">`
+                        suggestion.data.imageUrl
+                        ? `<img src="${suggestion.data.imageUrl}" alt="${suggestion.data.commonName}">`
                         : `<div class="no-image">🌿</div>`
                     }
                 </div>
 
-                <div class="plant-details">
-                    <p><strong>Scientific:</strong><br>${plant.scientific_name || "Unknown"}</p>
-                    <p><strong>Family:</strong><br>${plant.family || "Unknown"}</p>
-                </div>
+                <h3>${suggestion.data.commonName}</h3>
 
                 <div class="card-btn-row">
                     <button class="btn-add">+ Add to My Plants</button>
                 </div>
             `;
 
-            const addBtn = card.querySelector(".btn-add");
-            addBtn.addEventListener("click", () => openPlantAddModal(plant));
+            const btn = card.querySelector(".btn-add");
+
+            btn.addEventListener("click", () => {
+                openPlantAddModal(suggestion.data);
+            });
 
             grid.appendChild(card);
 
@@ -126,8 +125,8 @@ async function renderRecommendedSection(plants = null) {
 
     } catch (error) {
 
-        grid.innerHTML = "<p>Error loading recommendations.</p>";
         console.error(error);
+        grid.innerHTML = "<p>Failed to load recommendations.</p>";
 
     }
 }

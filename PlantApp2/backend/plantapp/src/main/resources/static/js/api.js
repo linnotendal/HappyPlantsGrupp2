@@ -114,4 +114,47 @@ const api = {
         const library = await this.getLibrary();
         return library.some(p => p.id === plantId || p.id === plantId.toString());
     },
+    async getContentSuggestion() {
+        try {
+            const response = await fetch(
+                `${API_BASE_URL}/user-plants/suggestions/content`,
+                { credentials: 'include' }
+            );
+
+            if (!response.ok) throw new Error('Failed to fetch');
+
+            const data = await response.json();
+
+            console.log("Suggestion:", data);
+
+            return data;
+
+        } catch (error) {
+            console.error(error);
+            return null;
+        }
+
+    },
+
+    async getPopularSuggestion() {
+        try {
+            const response = await fetch(
+                `${API_BASE_URL}/user-plants/suggestions/popular`,
+                { credentials: 'include' }
+            );
+
+            if (!response.ok) throw new Error('Failed to fetch');
+
+            const data = await response.json();
+
+            console.log("Suggestion:", data);
+
+            return data;
+
+        } catch (error) {
+            console.error(error);
+            return null;
+        }
+
+    }
 };
