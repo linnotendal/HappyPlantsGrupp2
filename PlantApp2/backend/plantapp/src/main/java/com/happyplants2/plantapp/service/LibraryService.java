@@ -110,4 +110,8 @@ public class LibraryService {
                 .findFirst()
                 .orElse(null);
     }
+
+    public long countUsersWithPlant(Long plantId){
+       return userPlantsRepository.countUsersWithPlant(plantId);
+    }
 }

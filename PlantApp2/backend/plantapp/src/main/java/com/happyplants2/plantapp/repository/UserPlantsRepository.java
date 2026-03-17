@@ -22,6 +22,14 @@ public interface UserPlantsRepository extends JpaRepository<UserPlant, Long> {
     ORDER BY COUNT(up.plant) DESC
 """)
     List<PlantTemplate> findMostPopularNotOwned(Long userId);
+
+    @Query("""
+    SELECT COUNT(DISTINCT up.user.id)
+    FROM UserPlant up
+    WHERE up.plant.id = :plantId
+""")
+    long countUsersWithPlant(Long plantId);
 }
+
 
 
