@@ -120,6 +120,14 @@ h2 {
     gap: 20px;
 }
 
+.plant-count {
+    grid-area: count;
+    text-align: center;
+    margin: 5px 0;
+    font-size: 0.9rem;
+    color: #666;
+}
+
 .plant-card {
     background: #f8f9fa;
     padding: 20px;
@@ -369,17 +377,16 @@ flex-grow: 1;
     border-radius: 5px;
     cursor: pointer;
 }
-/*Needs to be checked can be duplicated*/
+
 .plant-card.custom-layout {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-areas:
-        "header header"
-        "image  details"
-        "footer footer";
-    gap: 15px;
-    padding: 20px;
+    display: flex;
+    flex-direction: column;
     align-items: center;
+    text-align: center;
+
+    gap: 10px;
+    padding: 20px;
+
     background: #fff;
     border-radius: 15px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);

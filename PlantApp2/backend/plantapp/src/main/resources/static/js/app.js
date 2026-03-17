@@ -75,29 +75,29 @@ async function renderRecommendedSection() {
     grid.innerHTML = "<p>Loading recommendations...</p>";
 
     try {
-
         const contentSuggestion = await api.getContentSuggestion();
         const popularSuggestion = await api.getPopularSuggestion();
 
-        grid.innerHTML = "";
-
+        
         const suggestions = [
             { title: "Try something new!", data: contentSuggestion },
             { title: "Popular among users", data: popularSuggestion }
-        ];
+        ].filter(s => s.data);
 
-        suggestions.forEach(suggestion => {
+        
+        grid.innerHTML = "";
 
-            if (!suggestion.data) return;
-
-            const plant = new PlantTemplate(suggestion.data);
+        const cards = await Promise.all(suggestions.map(async (suggestion) => {
+                console.log("DATA:", suggestion.data);
+                const plantId = suggestion.data.id ?? suggestion.data.plantId;
+                const count = await api.getNbrOfUsersWithThisPlant(plantId);
 
             const card = document.createElement("div");
             card.className = "plant-card custom-layout";
 
             card.innerHTML = `
                 <h2>${suggestion.title}</h2>
-
+                
                 <div class="plant-image-container">
                     ${
                         suggestion.data.imageUrl
@@ -107,7 +107,8 @@ async function renderRecommendedSection() {
                 </div>
 
                 <h3>${suggestion.data.commonName}</h3>
-
+                
+                <p class="plant-count">${count} user have this plant!</p>
                 <div class="card-btn-row">
                     <button class="btn-add">+ Add to My Plants</button>
                 </div>
@@ -119,15 +120,14 @@ async function renderRecommendedSection() {
                 openPlantAddModal(suggestion.data);
             });
 
-            grid.appendChild(card);
+            return card;
+        }));
 
-        });
+        cards.forEach(card => grid.appendChild(card));
 
     } catch (error) {
-
         console.error(error);
         grid.innerHTML = "<p>Failed to load recommendations.</p>";
-
     }
 }
 

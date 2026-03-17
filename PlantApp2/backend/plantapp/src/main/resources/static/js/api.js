@@ -144,11 +144,8 @@ const api = {
             );
 
             if (!response.ok) throw new Error('Failed to fetch');
-
+            
             const data = await response.json();
-
-            console.log("Suggestion:", data);
-
             return data;
 
         } catch (error) {
@@ -156,5 +153,18 @@ const api = {
             return null;
         }
 
+    },
+
+    async getNbrOfUsersWithThisPlant(id) {
+        const response = await fetch(`${API_BASE_URL}/user-plants/plantData/${id}`);
+
+        if (!response.ok) {
+            throw new Error("Plant not found");
+        }
+
+        const data = await response.json();
+        console.log(data.count);
+
+        return data.count;
     }
 };

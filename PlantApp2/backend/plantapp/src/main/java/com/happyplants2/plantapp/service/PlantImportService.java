@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -35,12 +36,63 @@ public class PlantImportService {
     @EventListener(ApplicationReadyEvent.class)
     public void runImportOnStartup() {
         if (repository.count() > 10) {
+            refreshPlants(10, 100);
             System.out.println("API will not be called, the database has data");
             return;
         }
         System.out.println("application started, loading plants from API has started");
         importIndoorPlants(40);
     }
+
+    public void refreshPlants(int totalPages, int perPage) {
+        for (int page = 1; page <= totalPages; page++) {
+
+            String url = "https://perenual.com/api/species-list?key="
+                    + apiKey + "&per_page=" + perPage + "&page=" + page + "&indoor=true";
+
+            try {
+                SpeciesListDTO response = restTemplate.getForObject(url, SpeciesListDTO.class);
+
+                if (response == null || response.getData() == null) continue;
+
+                List<PlantTemplate> plants = new ArrayList<>();
+
+                for (PlantDto dto : response.getData()) {
+
+                    PlantTemplate plant = new PlantTemplate();
+
+                    plant.setId(dto.getId());
+                    plant.setCommonName(dto.getCommonName());
+
+                    if (dto.getScientificName() != null && !dto.getScientificName().isEmpty()) {
+                        plant.setScientificName(String.join(", ", dto.getScientificName()));
+                    }
+
+                    plant.setFamily(dto.getFamily());
+                    plant.setWatering(dto.getWatering());
+
+                    if (dto.getSunlight() != null) {
+                        plant.setSunlight(String.join(", ", dto.getSunlight()));
+                    }
+
+                    if (dto.getDefaultImage() != null) {
+                        plant.setImageUrl(dto.getDefaultImage().getOriginal_url());
+                    }
+
+                    Integer waterDays = extractWateringDays(dto);
+                    plant.setWaterFrequencyDays(waterDays != null ? waterDays : 7);
+
+                    plants.add(plant);
+                }
+
+                repository.saveAll(plants);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     public void importIndoorPlants(int limit) {
         String url = "https://perenual.com/api/species-list?key=" + apiKey + "&per_page=" + limit + "&indoor=true";
         try{

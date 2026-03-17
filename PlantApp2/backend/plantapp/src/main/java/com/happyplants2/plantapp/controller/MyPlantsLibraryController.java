@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/user-plants")
@@ -70,5 +71,10 @@ public class MyPlantsLibraryController {
         }
 
         return ResponseEntity.ok(myPlantsLibraryService.getSuggestedPopularity(userId));
+    }
+
+    @GetMapping("plantData/{plantId}")
+    public ResponseEntity<?> getNbrOfUsersPerPlant(@PathVariable Long plantId){
+    return ResponseEntity.ok(Map.of("count", myPlantsLibraryService.countUsersWithPlant(plantId)));
     }
 }
