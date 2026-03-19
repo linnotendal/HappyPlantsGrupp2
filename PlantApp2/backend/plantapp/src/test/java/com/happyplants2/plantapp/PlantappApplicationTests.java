@@ -509,7 +509,6 @@ class PlantappApplicationTests {
 
         UserPlant userPlant = new UserPlant(testUser, template, LocalDate.now());
         userPlant.setNickName("LibraryPlant");
-        userPlant.setLastWatered(LocalDate.now().minusDays(4));
         userPlantsRepository.save(userPlant);
 
         mockMvc.perform(get("/api/user-plants/suggestions/content")
@@ -539,7 +538,6 @@ class PlantappApplicationTests {
 
         UserPlant userPlant = new UserPlant(testUser2, template, LocalDate.now());
         userPlant.setNickName("LibraryPlant");
-        userPlant.setLastWatered(LocalDate.now().minusDays(4));
         userPlantsRepository.save(userPlant);
 
         mockMvc.perform(get("/api/user-plants/suggestions/popular")
@@ -548,6 +546,34 @@ class PlantappApplicationTests {
                 .andExpect(jsonPath("$.commonName").value("Rose"));
     }
 
+    @Test
+    /**
+     A user shall be able to see statistics for how many users own a plant
+     */
+    public void testINF04F_userStatisticsForPlants() throws Exception {
+        User testUser = userService.registerUser("test@test.com", "testuser", "123456");
+        User testUser2 = userService.registerUser("testing@test.com", "testuser2", "123456");
+
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("userId", testUser.getId());
+
+        PlantTemplate template = new PlantTemplate(1337, "Rose", "Rosa", "Rosaceae",
+                "frequent", "full sun", "image.jpg", 7);
+        plantTemplateRepository.save(template);
+
+        UserPlant userPlant = new UserPlant(testUser, template, LocalDate.now());
+        userPlant.setNickName("LibraryPlant");
+        userPlantsRepository.save(userPlant);
+
+        UserPlant userPlant2 = new UserPlant(testUser2, template, LocalDate.now());
+        userPlant2.setNickName("LibraryPlant");
+        userPlantsRepository.save(userPlant2);
+
+        mockMvc.perform(get("/api/user-plants/plantData/1337")
+                        .session(session))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.count").value(2));
+    }
 
     @Test
 /**
