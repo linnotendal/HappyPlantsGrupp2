@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -533,21 +534,20 @@ class PlantappApplicationTests {
         assertEquals(before, after);
     }
 
-    @Disabled
-    /* TEST DISABLED:
-    *   Test is for unused back-end code and has therefore been disabled,
-    *   since the search function was changed to front-end.
-    * */
     @Test
 /**
- A user shall be able to see suggestions for different plants and search
- for plants based on plant name.
+ A user shall be able to search for plants based on plant name.
  */
     public void testSOK01F_shouldReturnPlantsMatchingSearchName() throws Exception {
+        PlantTemplate template = new PlantTemplate(999, "Monstera", "Monstera deliciosa", "Araceae",
+                "average", "part shade", "monstera.jpg", 7);
+        plantTemplateRepository.save(template);
+
         mockMvc.perform(get("/api/discover/search")
                         .param("name", "Monstera"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray());
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$[0].common_name", containsStringIgnoringCase("monstera")));
     }
 
     @Test
