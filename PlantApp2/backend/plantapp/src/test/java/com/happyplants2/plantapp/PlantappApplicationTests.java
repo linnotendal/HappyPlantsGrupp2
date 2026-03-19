@@ -489,6 +489,65 @@ class PlantappApplicationTests {
         assertEquals(3, userPlant.getDaysUntilWater());
     }
 
+    @Test
+    /**A user shall be able to receive a random plant suggestion
+     * of a plant not in their library.
+     */
+    public void testINF03F_plantSuggestionRandomNotOwned() throws Exception {
+        User testUser = userService.registerUser("test@test.com", "testuser", "123456");
+
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("userId", testUser.getId());
+
+        PlantTemplate template = new PlantTemplate(1337, "Rose", "Rosa", "Rosaceae",
+                "frequent", "full sun", "image.jpg", 7);
+        plantTemplateRepository.save(template);
+
+        PlantTemplate template2 = new PlantTemplate(999, "Monstera", "Monstera deliciosa", "Araceae",
+                "average", "part shade", "monstera.jpg", 7);
+        plantTemplateRepository.save(template2);
+
+        UserPlant userPlant = new UserPlant(testUser, template, LocalDate.now());
+        userPlant.setNickName("LibraryPlant");
+        userPlant.setLastWatered(LocalDate.now().minusDays(4));
+        userPlantsRepository.save(userPlant);
+
+        mockMvc.perform(get("/api/user-plants/suggestions/content")
+                        .session(session))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.commonName").value("Monstera"));
+    }
+
+    @Test
+    /**A user shall be able to receive a plant suggestion
+     * of a plant not in their library based on other user popularity.
+     */
+    public void testINF03F_plantSuggestionPopularityBased() throws Exception {
+        User testUser = userService.registerUser("test@test.com", "testuser", "123456");
+        User testUser2 = userService.registerUser("testing@test.com", "testuser2", "123456");
+
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("userId", testUser.getId());
+
+        PlantTemplate template = new PlantTemplate(1337, "Rose", "Rosa", "Rosaceae",
+                "frequent", "full sun", "image.jpg", 7);
+        plantTemplateRepository.save(template);
+
+        PlantTemplate template2 = new PlantTemplate(999, "Monstera", "Monstera deliciosa", "Araceae",
+                "average", "part shade", "monstera.jpg", 7);
+        plantTemplateRepository.save(template2);
+
+        UserPlant userPlant = new UserPlant(testUser2, template, LocalDate.now());
+        userPlant.setNickName("LibraryPlant");
+        userPlant.setLastWatered(LocalDate.now().minusDays(4));
+        userPlantsRepository.save(userPlant);
+
+        mockMvc.perform(get("/api/user-plants/suggestions/popular")
+                        .session(session))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.commonName").value("Rose"));
+    }
+
 
     @Test
 /**
