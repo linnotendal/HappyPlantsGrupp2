@@ -509,15 +509,12 @@ class PlantappApplicationTests {
         assertEquals(before, after);
     }
 
-<<<<<<< Updated upstream
-    @Disabled("Not implemented yet")
-=======
+
+    @Disabled
     /* TEST DISABLED:
     *   Test is for unused back-end code and has therefore been disabled,
     *   since the search function was changed to front-end.
     * */
-    @Disabled
->>>>>>> Stashed changes
     @Test
 /**
  A user shall be able to see suggestions for different plants and search
