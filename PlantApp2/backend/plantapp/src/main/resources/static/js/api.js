@@ -46,29 +46,31 @@ const api = {
 
     async getLibrary() {
         try {
-            const response = await fetch(`${API_BASE_URL}/user-plants`,{
+            const response = await fetch(`${API_BASE_URL}/user-plants`, {
                 credentials: 'include'
             });
             if (!response.ok) throw new Error('Failed to fetch');
 
             const data = await response.json();
-            console.log(data)
             return data.map(plantData => new UserPlant(plantData));
         } catch (error) {
-            console.warn('Using localStorage fallback:', error.message);
-            return this._getLibraryFromLocalStorage();
+            console.warn('Could not load library:', error.message);
+            return [];
         }
     },
 
-    async addToLibrary(plantTemplate) {
+    async addToLibrary(plantTemplate, location = "") {
         try {
-            const response = await fetch(`${API_BASE_URL}/user-plants/add/${plantTemplate.id}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include'
-            });
+            const response = await fetch(
+                `${API_BASE_URL}/user-plants/add/${plantTemplate.id}?location=${encodeURIComponent(location)}`,
+                {
+                    method: 'POST',
+                    credentials: 'include'
+                }
+            );
 
             if (!response.ok) throw new Error('Backend not available');
+
             const data = await response.json();
             return new UserPlant(data);
         } catch (error) {
@@ -112,41 +114,57 @@ const api = {
         const library = await this.getLibrary();
         return library.some(p => p.id === plantId || p.id === plantId.toString());
     },
-/**
-    //Localstorage, can be removed when database is implemented, or keep as backup
-    _getLibraryFromLocalStorage() {
-        const data = localStorage.getItem(STORAGE_KEY);
-        if (!data) return [];
-        return JSON.parse(data).map(p =>
-            new Plant(p.id, p.name, p.species, p.wateringIntervalDays, p.lastWatered)
-        );
-    },
+    async getContentSuggestion() {
+        try {
+            const response = await fetch(
+                `${API_BASE_URL}/user-plants/suggestions/content`,
+                { credentials: 'include' }
+            );
 
-    _addToLibraryLocalStorage(plant) {
-        const library = this._getLibraryFromLocalStorage();
-        if (library.find(p => p.id === plant.id)) return false;
+            if (!response.ok) throw new Error('Failed to fetch');
 
-        plant.addToLibrary();
-        library.push(plant);
-        this._saveLibrary(library);
-        return true;
-    },
+            const data = await response.json();
 
-    _removeFromLibraryLocalStorage(plantId) {
-        const library = this._getLibraryFromLocalStorage();
-        this._saveLibrary(library.filter(p => p.id !== plantId));
-    },
+            console.log("Suggestion:", data);
 
-    _waterPlantLocalStorage(plantId) {
-        const library = this._getLibraryFromLocalStorage();
-        const plant = library.find(p => p.id === plantId);
-        if (plant) {
-            plant.lastWatered = new Date();
-            this._saveLibrary(library);
+            return data;
+
+        } catch (error) {
+            console.error(error);
+            return null;
         }
+
     },
 
-    _saveLibrary(library) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(library));
-    }*/
+    async getPopularSuggestion() {
+        try {
+            const response = await fetch(
+                `${API_BASE_URL}/user-plants/suggestions/popular`,
+                { credentials: 'include' }
+            );
+
+            if (!response.ok) throw new Error('Failed to fetch');
+            
+            const data = await response.json();
+            return data;
+
+        } catch (error) {
+            console.error(error);
+            return null;
+        }
+
+    },
+
+    async getNbrOfUsersWithThisPlant(id) {
+        const response = await fetch(`${API_BASE_URL}/user-plants/plantData/${id}`);
+
+        if (!response.ok) {
+            throw new Error("Plant not found");
+        }
+
+        const data = await response.json();
+        console.log(data.count);
+
+        return data.count;
+    }
 };
