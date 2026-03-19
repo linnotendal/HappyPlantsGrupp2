@@ -372,6 +372,30 @@ class PlantappApplicationTests {
                 .andExpect(jsonPath("$[*].nickName").value(hasItem("LibraryPlant")));
     }
 
+    @Test
+/**
+ A user shall be able to categorize their plants
+ based on their location.
+ */
+    void testBIB05F_categorizePlants() throws Exception {
+        User testUser = userService.registerUser("test@test.com", "testUser", "123456");
+
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("userId", testUser.getId());
+
+        PlantTemplate template = new PlantTemplate(456, "Fern", "Polypodiopsida", "Polypodiaceae",
+                "frequent", "part shade", "fern.jpg", 3);
+        plantTemplateRepository.save(template);
+
+        UserPlant userPlant = new UserPlant(testUser, template, LocalDate.now());
+        userPlant.setLocation("Kitchen");
+        userPlantsRepository.save(userPlant);
+
+        mockMvc.perform(get("/api/user-plants")
+                        .session(session))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[*].location").value("Kitchen"));
+    }
 
     @Test
 /**
