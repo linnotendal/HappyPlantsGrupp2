@@ -36,11 +36,35 @@ public class PlantImportService {
     public void runImportOnStartup() {
         if (repository.count() > 10) {
             System.out.println("API will not be called, the database has data");
+            //fixFamilyNames();
             return;
         }
         System.out.println("application started, loading plants from API has started");
         importIndoorPlants(40);
     }
+
+    /**
+     * This method checks for each scientific name and adds the first part as the family. This is not technically
+     * as this is just a species, not family. But it fills family..
+     */
+    private void fixFamilyNames() {
+        List<PlantTemplate> plants = repository.findAll();
+
+        for (PlantTemplate plant : plants) {
+            String family = plant.getFamily();
+            String scientificName = plant.getScientificName();
+
+            if ((family == null || family.isBlank()) &&
+                    scientificName != null && !scientificName.isBlank()) {
+
+                String firstWord = scientificName.trim().split("\\s+")[0];
+                plant.setFamily(firstWord);
+            }
+        }
+
+        repository.saveAll(plants);
+    }
+
     public void importIndoorPlants(int limit) {
         String url = "https://perenual.com/api/species-list?key=" + apiKey + "&per_page=" + limit + "&indoor=true";
         try{

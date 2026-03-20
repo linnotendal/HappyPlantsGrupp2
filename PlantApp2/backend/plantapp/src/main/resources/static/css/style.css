@@ -784,6 +784,12 @@ section { position: relative; }
     box-shadow: 0 0 0 2px rgba(107,156,56,0.15);
 }
 
+#modal-nickname:focus {
+    outline: none;
+    border-color: #6b9c38;
+    box-shadow: 0 0 0 2px rgba(107,156,56,0.15);
+}
+
 /* add button */
 #modal-add-btn {
     width: 100%;
@@ -856,6 +862,25 @@ section { position: relative; }
     color: #405e21;
     pointer-events: none;
     font-size: 0.9em;
+}
+
+#modal-plant-nickname {
+    width: 100%;
+    padding: 10px 12px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    border: 2px solid #6b9c38;
+    background: #f9f9f9;
+    color: #405e21;
+    font-size: 0.95em;
+    transition: all 0.2s ease;
+}
+
+#modal-plant-nickname:focus {
+    outline: none;
+    border-color: #405e21;
+    box-shadow: 0 0 0 3px rgba(64,94,33,0.2);
+    background: #fff;
 }
 /* Toast container*/
 .toast-container {

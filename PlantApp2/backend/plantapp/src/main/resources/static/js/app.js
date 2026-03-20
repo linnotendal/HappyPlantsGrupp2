@@ -88,7 +88,6 @@ async function renderRecommendedSection() {
         grid.innerHTML = "";
 
         const cards = await Promise.all(suggestions.map(async (suggestion) => {
-                console.log("DATA:", suggestion.data);
                 const plantId = suggestion.data.id ?? suggestion.data.plantId;
                 const count = await api.getNbrOfUsersWithThisPlant(plantId);
 
@@ -108,7 +107,7 @@ async function renderRecommendedSection() {
 
                 <h3>${suggestion.data.commonName}</h3>
                 
-                <p class="plant-count">${count} user have this plant!</p>
+                <p class="plant-count">${count} users have this plant!</p>
                 <div class="card-btn-row">
                     <button class="btn-add">+ Add to My Plants</button>
                 </div>
@@ -354,7 +353,9 @@ async function renderLibrarySection(filteredPlants = null) {
                 </div>
             
                 <h3 class="plant-link" onclick="openPlantInfo(${plant.plantId})">${plant.name}</h3>
-                    <p><strong>Family:</strong> ${plant.family || 'Unknown'}</p>    
+                    <p><strong>Placement:</strong> ${plant.location || 'Unknown'}</p> 
+                    <p><strong>Family:</strong> ${plant.family || 'Unknown'}</p>
+                       
                 <div class="progress-container">
                     <div class="progress-bar">
                         <div class="progress-fill"
@@ -449,8 +450,8 @@ async function addToLibrary(plantId) {
     if (!source) return;
 
     const plant = new Plant(source.id, source.name, source.species, source.wateringIntervalDays);
-    await api.addToLibrary(plant);
-
+    datareturn = await api.addToLibrary(plant);
+    console.log("return from api " +datareturn);
     renderDiscoverSection();
     renderLibrarySection();
 }
@@ -548,9 +549,14 @@ function showSuccessNotification(message) {
 }
 document.getElementById('modal-add-btn').addEventListener('click', async () => {
     const location = document.getElementById('modal-location').value.trim();
+    const nickname = document.getElementById('modal-nickname').value.trim();
 
     try {
-        await api.addToLibrary(selectedPlantData, location);
+        const savedPlant = await api.addToLibrary(selectedPlantData, location);
+        if (nickname) {
+            await api.setNickName(savedPlant.userPlantId, nickname);
+        }
+
         showSuccessNotification(`${selectedPlantData.common_name} added to your library!`);
         closePlantAddModal();
         renderLibrarySection();
