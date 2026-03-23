@@ -48,6 +48,15 @@ public class MyPlantsLibraryController {
         return ResponseEntity.ok(myPlantsLibraryService.waterPlant(userPlantId));
     }
 
+    @PutMapping ("/{userPlantId}/{nickname}")
+    public ResponseEntity<?> setNickname(@PathVariable long userPlantId, @PathVariable String nickname, HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if(userId == null) {
+            return ResponseEntity.status(401).body("User is not logged in");
+        }
+        return ResponseEntity.ok(myPlantsLibraryService.setNickname(userPlantId, nickname, userId));
+    }
+
     @DeleteMapping("/remove/{userPlantId}")
     public ResponseEntity<Void> deletePlant(@PathVariable Long userPlantId) {
         myPlantsLibraryService.removePlant(userPlantId);

@@ -114,4 +114,20 @@ public class LibraryService {
     public long countUsersWithPlant(Long plantId){
        return userPlantsRepository.countUsersWithPlant(plantId);
     }
+
+    public Object setNickname(long userPlantId, String nickname, Long userId) {
+        UserPlant plant = userPlantsRepository.findById(userPlantId).orElse(null);
+
+        if (plant == null) {
+            return "Plant not found";
+        }
+
+        if (!plant.getUser().getId().equals(userId)) {
+            return "Not allowed";
+        }
+
+        plant.setNickName(nickname);
+        userPlantsRepository.save(plant);
+        return plant;
+    }
 }

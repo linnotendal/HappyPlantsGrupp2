@@ -166,5 +166,26 @@ const api = {
         console.log(data.count);
 
         return data.count;
+    },
+
+    async setNickName(plantId, nickname) {
+    try {
+        const response = await fetch(
+            `${API_BASE_URL}/user-plants/${plantId}/${encodeURIComponent(nickname)}`,
+            {
+                method: 'PUT',
+                credentials: 'include'
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error('Failed to set nickname');
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error(error);
+        return null;
     }
+}
 };
