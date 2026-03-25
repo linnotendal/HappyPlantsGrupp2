@@ -142,8 +142,8 @@ public class LibraryService {
             return "Not allowed";
         }
 
-        plant.setNickName(nickname);
-        plant.setLocation(location);
+        if(nickname != "") { plant.setNickName(nickname); }
+        if(location != "") { plant.setLocation(location); }
         userPlantsRepository.save(plant);
         return plant;
     }
