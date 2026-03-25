@@ -64,9 +64,10 @@ public class UserController {
 
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteUser(@PathVariable("id") long userId) {
+    @DeleteMapping("/delete")
+    public ResponseEntity<?> deleteUser(HttpSession session) {
        try {
+           Long userId = (Long) session.getAttribute("userId");
            userService.deleteUser(userId);
            return ResponseEntity.ok("User deleted successfully");
        }catch (IllegalArgumentException e) {

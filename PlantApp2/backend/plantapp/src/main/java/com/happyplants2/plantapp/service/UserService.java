@@ -1,6 +1,7 @@
 package com.happyplants2.plantapp.service;
 
 import com.happyplants2.plantapp.model.User;
+import com.happyplants2.plantapp.repository.UserPlantsRepository;
 import com.happyplants2.plantapp.repository.UserRepository;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,8 @@ import java.util.Optional;
 public class UserService {
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private UserPlantsRepository userPlantsRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
 
@@ -58,6 +61,7 @@ public class UserService {
             throw new IllegalArgumentException("User with this id is not found");
         }
         userRepository.deleteById(userId);
+        userPlantsRepository.deleteByUserId(userId);
         return true;
     }
 

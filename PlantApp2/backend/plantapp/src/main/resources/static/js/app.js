@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderDiscoverSection();
     renderLibrarySection();
     setupLogout();
+    setupDeleteUser();
 
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') closePlantModal();
@@ -245,6 +246,32 @@ function setupLogout() {
                 window.location.href = "index.html";
             } else {
                 alert("Logout failed");
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    });
+}
+
+function setupDeleteUser() {
+    const deleteBtn = document.getElementById("delete-btn");
+
+    if (!deleteBtn) return;
+
+    deleteBtn.addEventListener("click", async () => {
+        if(!confirm("Are you sure you want to delete your account?")) {return;}
+        try {
+            const response = await fetch("/api/users/delete", {
+                method: "DELETE",
+                credentials: "include"
+            });
+
+            console.log(response.text)
+
+            if (response.ok) {
+                window.location.href = "index.html";
+            } else {
+                alert("Account deletion failed.");
             }
         } catch (error) {
             console.error(error);

@@ -51,7 +51,7 @@ h1 {
 
 nav {
     display: flex;
-    justify-content: left;
+    justify-content: space-between;
     gap: 10px;
 }
 
@@ -81,12 +81,14 @@ nav {
     margin-left: auto;
 }
 
-.logout{
-    margin-left: auto;
+.delete{
+    border: 2px solid #8a1d1d;
+    background: transparent;
+    color: #b3281e;
 }
 
-.delete{
-    margin-left: auto;
+.delete:hover {
+    background: #8a1d1d
 }
 
 h2 {
