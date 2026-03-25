@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/user-plants")
@@ -18,7 +19,7 @@ import java.util.List;
 public class MyPlantsLibraryController {
     @Autowired
     private LibraryService myPlantsLibraryService;
-    // tested
+
     @GetMapping
     public ResponseEntity<?> getUserPlants(HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
@@ -27,16 +28,18 @@ public class MyPlantsLibraryController {
         }
         return ResponseEntity.ok(myPlantsLibraryService.getUserPlants(userId));
     }
-    // tested
+
     @PostMapping("/add/{plantId}")
-    public ResponseEntity<?> addPlant(@PathVariable Integer plantId, HttpSession session) {
+    public ResponseEntity<?> addPlant(@PathVariable Integer plantId, @RequestParam(required = false) String location,
+                                      HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
         if(userId == null) {
             return ResponseEntity.status(401).body("User is not logged in");
         }
-        return ResponseEntity.ok(myPlantsLibraryService.addPlantToUser(userId, plantId));
+        UserPlant userPlant = myPlantsLibraryService.addPlantToUser(userId, plantId, location);
+        return ResponseEntity.ok(userPlant);
     }
-    //Tested
+
     @PutMapping("/water/{userPlantId}")
     public ResponseEntity<?> waterPlant(@PathVariable Long userPlantId, HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
@@ -44,6 +47,15 @@ public class MyPlantsLibraryController {
             return ResponseEntity.status(401).body("User is not logged in");
         }
         return ResponseEntity.ok(myPlantsLibraryService.waterPlant(userId, userPlantId));
+    }
+
+    @PutMapping ("/{userPlantId}/{nickname}")
+    public ResponseEntity<?> setNickname(@PathVariable long userPlantId, @PathVariable String nickname, HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if(userId == null) {
+            return ResponseEntity.status(401).body("User is not logged in");
+        }
+        return ResponseEntity.ok(myPlantsLibraryService.setNickname(userPlantId, nickname, userId));
     }
 
     @DeleteMapping("/remove/{userPlantId}")
@@ -54,5 +66,29 @@ public class MyPlantsLibraryController {
         }
         myPlantsLibraryService.removePlant(userId,userPlantId);
         return ResponseEntity.ok().build();
+    }
+    @GetMapping("/suggestions/content")
+    public ResponseEntity<?> getSuggestionBasedOnContent(HttpSession session){
+        Long userId = (Long) session.getAttribute("userId");
+        if(userId == null) {
+            return ResponseEntity.status(401).body("User is not logged in");
+        }
+
+        return ResponseEntity.ok(myPlantsLibraryService.getSuggestedContent(userId));
+    }
+
+    @GetMapping("/suggestions/popular")
+    public ResponseEntity<?> getSuggestionBasedOnPopularity(HttpSession session){
+        Long userId = (Long) session.getAttribute("userId");
+        if(userId == null) {
+            return ResponseEntity.status(401).body("User is not logged in");
+        }
+
+        return ResponseEntity.ok(myPlantsLibraryService.getSuggestedPopularity(userId));
+    }
+
+    @GetMapping("plantData/{plantId}")
+    public ResponseEntity<?> getNbrOfUsersPerPlant(@PathVariable Long plantId){
+    return ResponseEntity.ok(Map.of("count", myPlantsLibraryService.countUsersWithPlant(plantId)));
     }
 }
