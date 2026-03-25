@@ -60,8 +60,8 @@ public class UserService {
         if(!userRepository.existsById(userId)) {
             throw new IllegalArgumentException("User with this id is not found");
         }
-        userRepository.deleteById(userId);
         userPlantsRepository.deleteByUserId(userId);
+        userRepository.deleteById(userId);
         return true;
     }
 

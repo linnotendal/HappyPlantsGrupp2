@@ -127,6 +127,36 @@ class PlantappApplicationTests {
 
     @Test
 /**
+ A user shall be able to delete their account
+ */
+    public void testANV04F_shouldDeleteAccount() throws Exception {
+        User testUser = userService.registerUser("delete@test.com", "deleter", "123456");
+        userRepository.saveAndFlush(testUser);
+
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("userId", testUser.getId());
+
+        PlantTemplate template = new PlantTemplate(789, "Basil", "Ocimum basilicum", "Lamiaceae",
+                "frequent", "full sun", "basil.jpg", 2);
+        plantTemplateRepository.saveAndFlush(template);
+
+        UserPlant userPlant = new UserPlant(testUser, template, LocalDate.now());
+        userPlant.setNickName("Plant");
+        userPlant = userPlantsRepository.saveAndFlush(userPlant);
+
+        userRepository.flush();
+        userPlantsRepository.flush();
+
+        mockMvc.perform(delete("/api/users/delete")
+                        .session(session))
+                .andExpect(status().isOk());
+
+        assertFalse(userRepository.existsById(testUser.getId()));
+        assertFalse(userPlantsRepository.existsById(userPlant.getId()));
+    }
+
+    @Test
+/**
  A user shall receive an error message
  if they attempt to create an account without a username.
  */
