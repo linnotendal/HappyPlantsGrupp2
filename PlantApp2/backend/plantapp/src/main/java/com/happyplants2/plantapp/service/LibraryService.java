@@ -10,10 +10,11 @@ import com.happyplants2.plantapp.repository.UserPlantsRepository;
 import com.happyplants2.plantapp.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Random;
 import java.util.stream.Collectors;
 
 /**
@@ -42,9 +43,12 @@ public class LibraryService {
      * @param userPlantId
      * @return
      */
-    public UserPlant waterPlant(Long userPlantId) {
+    public UserPlant waterPlant(Long userId, Long userPlantId) {
         UserPlant userPlant = userPlantsRepository.findById(userPlantId)
-                .orElseThrow(() -> new IllegalArgumentException("User plant not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User plant not found"));
+        if (!userPlant.getUser().getId().equals(userId)){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not allowe to water this plant");
+        }
         userPlant.setLastWatered(LocalDate.now());
         return userPlantsRepository.save(userPlant);
     }
@@ -55,7 +59,7 @@ public class LibraryService {
      * @param plantTemplateId
      * @return
      */
-    public UserPlant addPlantToUser(Long userId, Integer plantTemplateId, String location) {
+    public UserPlant addPlantToUser(Long userId, Integer plantTemplateId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
@@ -64,7 +68,6 @@ public class LibraryService {
         UserPlant userPlant = new UserPlant();
         userPlant.setUser(user);
         userPlant.setPlant(plantTemplate);
-        userPlant.setLocation(location);
         userPlant.setLastWatered(LocalDate.now());
 
         return userPlantsRepository.save(userPlant);
@@ -74,60 +77,14 @@ public class LibraryService {
      * Removes a plant from users library
      * @param userPlantId
      */
-    public void removePlant(Long userPlantId) {
-        userPlantsRepository.deleteById(userPlantId);
-    }
+    public void removePlant(Long userId, Long userPlantId) {
+        UserPlant userPlant = userPlantsRepository.findById(userPlantId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User plant not found"));
 
-    /**
-     * Does not in fact give the user a suggestion based on content. Instead it gives a random flower that the user
-     * does not already have in the library. Since family is always null in the API we can't use this.
-     * @param userId self explanatory
-     * @return a random plant
-     */
-    public PlantTemplate getSuggestedContent(Long userId) {
-        List<UserPlant> userPlants = userPlantsRepository.findByUser_Id(userId);
-        List<Integer> ownedPlantIds = userPlants.stream()
-                .map(up -> up.getPlant().getId())
-                .toList();
-
-        List<PlantTemplate> allPlants = plantTemplateRepository.findAll();
-
-        List<PlantTemplate> candidates = allPlants.stream()
-                .filter(p -> !ownedPlantIds.contains(p.getId()))
-                .toList();
-
-        if (candidates.isEmpty()) {
-            return null;
+        if (!userPlant.getUser().getId().equals(userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not allowed to remove this plant");
         }
 
-        Random random = new Random();
-        return candidates.get(random.nextInt(candidates.size()));
-    }
-
-    public PlantTemplate getSuggestedPopularity(Long userId) {
-        return userPlantsRepository.findMostPopularNotOwned(userId)
-                .stream()
-                .findFirst()
-                .orElse(null);
-    }
-
-    public long countUsersWithPlant(Long plantId){
-       return userPlantsRepository.countUsersWithPlant(plantId);
-    }
-
-    public Object setNickname(long userPlantId, String nickname, Long userId) {
-        UserPlant plant = userPlantsRepository.findById(userPlantId).orElse(null);
-
-        if (plant == null) {
-            return "Plant not found";
-        }
-
-        if (!plant.getUser().getId().equals(userId)) {
-            return "Not allowed";
-        }
-
-        plant.setNickName(nickname);
-        userPlantsRepository.save(plant);
-        return plant;
+        userPlantsRepository.delete(userPlant);
     }
 }

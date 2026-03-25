@@ -59,18 +59,15 @@ const api = {
         }
     },
 
-    async addToLibrary(plantTemplate, location = "") {
+    async addToLibrary(plantTemplate) {
         try {
-            const response = await fetch(
-                `${API_BASE_URL}/user-plants/add/${plantTemplate.id}?location=${encodeURIComponent(location)}`,
-                {
-                    method: 'POST',
-                    credentials: 'include'
-                }
-            );
+            const response = await fetch(`${API_BASE_URL}/user-plants/add/${plantTemplate.id}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include'
+            });
 
             if (!response.ok) throw new Error('Backend not available');
-
             const data = await response.json();
             console.log(data);
             return new UserPlant(data);
@@ -115,78 +112,4 @@ const api = {
         const library = await this.getLibrary();
         return library.some(p => p.id === plantId || p.id === plantId.toString());
     },
-    async getContentSuggestion() {
-        try {
-            const response = await fetch(
-                `${API_BASE_URL}/user-plants/suggestions/content`,
-                { credentials: 'include' }
-            );
-
-            if (!response.ok) throw new Error('Failed to fetch');
-
-            const data = await response.json();
-
-            console.log("Suggestion:", data);
-
-            return data;
-
-        } catch (error) {
-            console.error(error);
-            return null;
-        }
-
-    },
-
-    async getPopularSuggestion() {
-        try {
-            const response = await fetch(
-                `${API_BASE_URL}/user-plants/suggestions/popular`,
-                { credentials: 'include' }
-            );
-
-            if (!response.ok) throw new Error('Failed to fetch');
-            
-            const data = await response.json();
-            return data;
-
-        } catch (error) {
-            console.error(error);
-            return null;
-        }
-
-    },
-
-    async getNbrOfUsersWithThisPlant(id) {
-        const response = await fetch(`${API_BASE_URL}/user-plants/plantData/${id}`);
-
-        if (!response.ok) {
-            throw new Error("Plant not found");
-        }
-
-        const data = await response.json();
-        console.log(data.count);
-
-        return data.count;
-    },
-
-    async setNickName(plantId, nickname) {
-    try {
-        const response = await fetch(
-            `${API_BASE_URL}/user-plants/${plantId}/${encodeURIComponent(nickname)}`,
-            {
-                method: 'PUT',
-                credentials: 'include'
-            }
-        );
-
-        if (!response.ok) {
-            throw new Error('Failed to set nickname');
-        }
-
-        return await response.json();
-    } catch (error) {
-        console.error(error);
-        return null;
-    }
-}
 };
