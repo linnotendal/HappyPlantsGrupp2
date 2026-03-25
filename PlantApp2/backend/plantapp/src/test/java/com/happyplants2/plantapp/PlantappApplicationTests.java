@@ -430,6 +430,72 @@ class PlantappApplicationTests {
 
     @Test
 /**
+ A user shall be able to edit the nickname of their plants
+ */
+    void testBIB06F_editPlantNickname() throws Exception {
+        User testUser = userService.registerUser("test@test.com", "testUser", "123456");
+
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("userId", testUser.getId());
+
+        PlantTemplate template = new PlantTemplate(456, "Fern", "Polypodiopsida", "Polypodiaceae",
+                "frequent", "part shade", "fern.jpg", 3);
+        plantTemplateRepository.save(template);
+
+        UserPlant userPlant = new UserPlant(testUser, template, LocalDate.now());
+        userPlant.setNickName("Plant");
+        userPlantsRepository.save(userPlant);
+
+        String json = """
+                {
+                    "nickname": "Planty",
+                    "location": ""
+                }
+                """;
+
+        mockMvc.perform(put("/api/user-plants/" + userPlant.getId() + "/edit")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json)
+                        .session(session))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.nickName").value("Planty"));
+    }
+
+    @Test
+/**
+ A user shall be able to edit the location of their plants
+ */
+    void testBIB06F_editPlantLocation() throws Exception {
+        User testUser = userService.registerUser("test@test.com", "testUser", "123456");
+
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("userId", testUser.getId());
+
+        PlantTemplate template = new PlantTemplate(456, "Fern", "Polypodiopsida", "Polypodiaceae",
+                "frequent", "part shade", "fern.jpg", 3);
+        plantTemplateRepository.save(template);
+
+        UserPlant userPlant = new UserPlant(testUser, template, LocalDate.now());
+        userPlant.setLocation("Kitchen");
+        userPlantsRepository.save(userPlant);
+
+        String json = """
+                {
+                    "nickname": "",
+                    "location": "Office"
+                }
+                """;
+
+        mockMvc.perform(put("/api/user-plants/" + userPlant.getId() + "/edit")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json)
+                        .session(session))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.location").value("Office"));
+    }
+
+    @Test
+/**
  A user shall be able to remove a plant from their library.
  */
     public void testBIB07F_shouldRemovePlantFromLibrary() throws Exception {
