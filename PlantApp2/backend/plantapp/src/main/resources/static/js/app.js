@@ -1,7 +1,7 @@
 //UI logic only. Does not touch data directly, uses api.js for everything.
 
 const DEV_MODE = true;
-let currentActiveRoom = "All";
+
 document.addEventListener('DOMContentLoaded', async () => {
 
     if (!DEV_MODE) {
@@ -43,104 +43,19 @@ function showSection(sectionName) {
 
     document.getElementById('discover-section').classList.add('hidden');
     document.getElementById('library-section').classList.add('hidden');
-    document.getElementById('recommended-section').classList.add('hidden');
 
     document.querySelectorAll('.nav-btn')
         .forEach(btn => btn.classList.remove('active'));
 
     if (sectionName === 'discover') {
-
         document.getElementById('discover-section').classList.remove('hidden');
         document.querySelector('.nav-btn[onclick*="discover"]').classList.add('active');
         renderDiscoverSection();
-
-    } else if (sectionName === 'library') {
-
-        currentActiveRoom = "All";
+    } else {
         document.getElementById('library-section').classList.remove('hidden');
         document.querySelector('.nav-btn[onclick*="library"]').classList.add('active');
         renderLibrarySection();
-
-    } else if (sectionName === 'recommended') {
-
-        document.getElementById('recommended-section').classList.remove('hidden');
-        document.querySelector('.nav-btn[onclick*="recommended"]').classList.add('active');
-        renderRecommendedSection();
-
     }
-}
-async function renderRecommendedSection() {
-
-    const grid = document.getElementById('recommended-grid');
-    grid.innerHTML = "<p>Loading recommendations...</p>";
-
-    try {
-        const contentSuggestion = await api.getContentSuggestion();
-        const popularSuggestion = await api.getPopularSuggestion();
-
-        
-        const suggestions = [
-            { title: "Try something new!", data: contentSuggestion },
-            { title: "Popular among users", data: popularSuggestion }
-        ].filter(s => s.data);
-
-        
-        grid.innerHTML = "";
-
-        const cards = await Promise.all(suggestions.map(async (suggestion) => {
-                const plantId = suggestion.data.id ?? suggestion.data.plantId;
-                const count = await api.getNbrOfUsersWithThisPlant(plantId);
-
-            const card = document.createElement("div");
-            card.className = "plant-card custom-layout";
-
-            card.innerHTML = `
-                <h2>${suggestion.title}</h2>
-                
-                <div class="plant-image-container">
-                    ${
-                        suggestion.data.imageUrl
-                        ? `<img src="${suggestion.data.imageUrl}" alt="${suggestion.data.commonName}">`
-                        : `<div class="no-image">🌿</div>`
-                    }
-                </div>
-
-                <h3>${suggestion.data.commonName}</h3>
-                
-                <p class="plant-count">${count} users have this plant!</p>
-                <div class="card-btn-row">
-                    <button class="btn-add">+ Add to My Plants</button>
-                </div>
-            `;
-
-            const btn = card.querySelector(".btn-add");
-
-            btn.addEventListener("click", () => {
-                openPlantAddModal(suggestion.data);
-            });
-
-            return card;
-        }));
-
-        cards.forEach(card => grid.appendChild(card));
-
-    } catch (error) {
-        console.error(error);
-        grid.innerHTML = "<p>Failed to load recommendations.</p>";
-    }
-}
-
-async function handleRecommendedSearch() {
-
-    const query = document.getElementById("plant-search-input").value.trim();
-
-    if (query === "") {
-        renderRecommendedSection();
-        return;
-    }
-
-    const plants = await api.searchPlantsFromBackend(query);
-    renderRecommendedSection(plants);
 }
 
 async function renderDiscoverSection(plants = null) {
@@ -182,7 +97,8 @@ async function renderDiscoverSection(plants = null) {
                 </div>
             `;
             const addBtn = card.querySelector('.btn-add');
-            addBtn.addEventListener('click', () => openPlantAddModal(plant));
+            addBtn.addEventListener('click', (event) => handleAddFromDiscover(event, plant));
+
             grid.appendChild(card);
         });
     } catch (error) {
@@ -215,6 +131,7 @@ async function handleAddFromDiscover(event, plantData) {
     btn.innerHTML = '<span class="btn-spinner"></span> Adding...';
     btn.disabled = true;
     try {
+        // ADD some attributes then
         const plantTemplate = new PlantTemplate(plantData);
         await api.addToLibrary(plantTemplate);
         btn.innerText = "✓ Added";
@@ -252,44 +169,6 @@ function setupLogout() {
     });
 }
 
-function renderRoomTabs(library) {
-    const container = document.getElementById("room-tabs");
-    container.innerHTML = "";
-    const rooms = [...new Set(
-        library
-            .map(p => p.location)
-            .filter(r => r && r !== "")
-    )];
-    const allTabs = ["All", ...rooms];
-    allTabs.forEach(room => {
-
-        const tab = document.createElement("button");
-        tab.className = "room-tab";
-        if (room === currentActiveRoom) {
-            tab.classList.add("active");
-        }
-        tab.textContent = room;
-
-        tab.onclick = () => {
-            currentActiveRoom = room;
-            filterLibraryByRoom(room);
-        };
-
-        container.appendChild(tab);
-    });
-}
-
-async function filterLibraryByRoom(room) {
-    currentActiveRoom = room;
-    const library = await api.getLibrary();
-    if (room === "All") {
-        renderLibrarySection(library);
-        return;
-    }
-    const filtered = library.filter(p => p.location === room);
-    renderLibrarySection(filtered);
-}
-
 async function renderLibrarySection(filteredPlants = null) {
     const grid = document.getElementById('library-grid');
     const emptyMsg = document.getElementById('empty-library-msg');
@@ -297,10 +176,7 @@ async function renderLibrarySection(filteredPlants = null) {
     if (filteredPlants == null) {
         grid.innerHTML = '<p>Loading...</p>';
     }
-    const fullLibrary = await api.getLibrary();
-    renderRoomTabs(fullLibrary);
-
-    const library = filteredPlants || fullLibrary;
+    const library = filteredPlants || await api.getLibrary();
 
     if (library && library.length > 0) {
         const sortBy = sortSelect.value;
@@ -353,9 +229,7 @@ async function renderLibrarySection(filteredPlants = null) {
                 </div>
             
                 <h3 class="plant-link" onclick="openPlantInfo(${plant.plantId})">${plant.name}</h3>
-                    <p><strong>Placement:</strong> ${plant.location || 'Unknown'}</p> 
-                    <p><strong>Family:</strong> ${plant.family || 'Unknown'}</p>
-                       
+                    <p><strong>Family:</strong> ${plant.family || 'Unknown'}</p>    
                 <div class="progress-container">
                     <div class="progress-bar">
                         <div class="progress-fill"
@@ -383,28 +257,22 @@ async function renderLibrarySection(filteredPlants = null) {
 }
 
 async function handleLibrarySearch() {
-    const searchInput = document.getElementById('library-search-input');
-    const query = searchInput.value.toLowerCase().trim();
-
-    let library = await api.getLibrary();
-    const filteredResults = library.filter(plant => {
-        const isInRoom = (currentActiveRoom === "All" || plant.location === currentActiveRoom);
-        const matchesQuery = !query ||
-            (plant.name && plant.name.toLowerCase().includes(query)) ||
-            (plant.family && plant.family.toLowerCase().includes(query));
-
-        return isInRoom && matchesQuery;
+    const query = document.getElementById('library-search-input').value.toLowerCase().trim();
+    const allLibraryPlants = await api.getLibrary();
+    if (query === "") {
+        renderLibrarySection(allLibraryPlants);
+        return;
+    }
+    const filtered = allLibraryPlants.filter(plant => {
+        const nameMatch = plant.name.toLowerCase().includes(query);
+        const familyMatch = plant.family && plant.family.toLowerCase().includes(query);
+        return nameMatch || familyMatch;
     });
-    renderLibrarySection(filteredResults);
-    document.getElementById('library-search-input').focus();
+    renderLibrarySection(filtered);
 }
 async function handleSortChange() {
     const sortBy = document.getElementById('sort-library-select').value;
     let library = await api.getLibrary();
-
-    if (currentActiveRoom !== "All") {
-        library = library.filter(p => p.location === currentActiveRoom);
-    }
 
     if (!library || library.length === 0) return;
 
@@ -450,8 +318,8 @@ async function addToLibrary(plantId) {
     if (!source) return;
 
     const plant = new Plant(source.id, source.name, source.species, source.wateringIntervalDays);
-    datareturn = await api.addToLibrary(plant);
-    console.log("return from api " +datareturn);
+    await api.addToLibrary(plant);
+
     renderDiscoverSection();
     renderLibrarySection();
 }
@@ -462,14 +330,9 @@ async function removeFromLibrary(backendId) {
         const success = await api.removeFromLibrary(backendId);
         if (success) {
             console.log("Removed from server successfully");
-            const updatedLibrary = await api.getLibrary();
-            if (currentActiveRoom !== "All") {
-                const filtered = updatedLibrary.filter(p => p.location === currentActiveRoom);
-                renderLibrarySection(filtered);
-            } else {
-                renderLibrarySection(updatedLibrary);
-            }
-            showSuccessNotification("Plant removed successfully");        }
+            await api.getLibrary();
+            await renderLibrarySection();
+        }
     } catch (error) {
         console.error("Failed to remove plant:", error);
     }
@@ -480,15 +343,7 @@ async function waterPlant(userPlantId) {
     try {
         const success = await api.waterPlant(userPlantId);
         if (success) {
-            console.log("Watering successes");
-            const updatedLibrary = await api.getLibrary();
-            if (currentActiveRoom !== "All") {
-                const filtered = updatedLibrary.filter(p => p.location === currentActiveRoom);
-                renderLibrarySection(filtered);
-            } else {
-                renderLibrarySection(updatedLibrary);
-            }
-            showSuccessNotification("Plant watered! 💧");
+            console.log("Watering successes")
             await renderLibrarySection();
         }
     } catch (error) {
@@ -519,49 +374,3 @@ function closePlantModal() {
     document.getElementById('plant-modal')
         .classList.add('hidden');
 }
-function openPlantAddModal(plantData) {
-    selectedPlantData = plantData;
-
-    document.getElementById('modal-plant-name').innerText = plantData.common_name;
-    document.getElementById('plant-add-modal').classList.remove('hidden');
-}
-
-function closePlantAddModal() {
-    document.getElementById('plant-add-modal').classList.add('hidden');
-}
-function showSuccessNotification(message) {
-    let container = document.querySelector('.toast-container');
-    if (!container) {
-        container = document.createElement('div');
-        container.className = 'toast-container';
-        document.body.appendChild(container);
-    }
-    const toast = document.createElement('div');
-    toast.className = 'toast-message';
-    toast.innerHTML = `🌿 <span>${message}</span>`;
-
-    container.appendChild(toast);
-
-    setTimeout(() => {
-        toast.remove();
-        if (container.childNodes.length === 0) container.remove();
-    }, 3000);
-}
-document.getElementById('modal-add-btn').addEventListener('click', async () => {
-    const location = document.getElementById('modal-location').value.trim();
-    const nickname = document.getElementById('modal-nickname').value.trim();
-
-    try {
-        const savedPlant = await api.addToLibrary(selectedPlantData, location);
-        if (nickname) {
-            await api.setNickName(savedPlant.userPlantId, nickname);
-        }
-
-        showSuccessNotification(`${selectedPlantData.common_name} added to your library!`);
-        closePlantAddModal();
-        renderLibrarySection();
-    } catch (error) {
-        console.error(error);
-        alert("Failed to add plant. Please try again.");
-    }
-});

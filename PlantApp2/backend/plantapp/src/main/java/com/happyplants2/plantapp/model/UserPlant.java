@@ -6,42 +6,32 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
 @Entity
-@Table(name = "user_plants")
+@Table(name= "user_plants")
 public class UserPlant {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name="user_id", nullable=false)
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "plant_id", nullable = false)
+    @JoinColumn(name="plant_id", nullable=false)
     private PlantTemplate plant;
 
-    @Column(name = "last_watered")
+    @Column(name= "last_watered")
     private LocalDate lastWatered;
     private String nickName;
     private String location;
 
 
-    public UserPlant() {
-    }
-
+    public UserPlant() {}
     public UserPlant(User user, PlantTemplate plant, LocalDate lastWatered) {
         this.user = user;
         this.plant = plant;
         this.lastWatered = lastWatered;
     }
-
-    public UserPlant(User user, PlantTemplate plant, LocalDate lastWatered, String location) {
-        this.user = user;
-        this.plant = plant;
-        this.lastWatered = lastWatered;
-        this.location = location;
-    }
-
     public void setId(Long id) {
         this.id = id;
     }
@@ -49,7 +39,6 @@ public class UserPlant {
     public Long getId() {
         return id;
     }
-
     public PlantTemplate getPlant() {
         return plant;
     }
@@ -65,7 +54,6 @@ public class UserPlant {
     public void setUser(User user) {
         this.user = user;
     }
-
     public String getNickName() {
         return nickName;
     }
@@ -83,7 +71,7 @@ public class UserPlant {
     }
 
     public double getProgress() {
-        if (plant == null || user == null) {
+        if (plant==null || user==null) {
             return 0.0;
         }
         long daysSinceWatered = ChronoUnit.DAYS.between(lastWatered, LocalDate.now());
@@ -98,14 +86,9 @@ public class UserPlant {
         long daysSinceWatered = ChronoUnit.DAYS.between(lastWatered, LocalDate.now());
         return (int) (plant.getWaterFrequencyDays() - daysSinceWatered);
     }
+    public LocalDate getLastWatered() { return lastWatered; }
 
-    public LocalDate getLastWatered() {
-        return lastWatered;
-    }
-
-    public void setLastWatered(LocalDate lastWatered) {
-        this.lastWatered = lastWatered;
-    }
+    public void setLastWatered(LocalDate lastWatered) { this.lastWatered = lastWatered; }
 
     public void water() {
         this.lastWatered = LocalDate.now();
