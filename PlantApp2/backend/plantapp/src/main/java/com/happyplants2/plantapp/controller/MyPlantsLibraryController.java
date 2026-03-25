@@ -1,5 +1,6 @@
 package com.happyplants2.plantapp.controller;
 
+import com.happyplants2.plantapp.DTO.EditPlantDTO;
 import com.happyplants2.plantapp.DTO.UserPlantsResponseDTO;
 import com.happyplants2.plantapp.model.UserPlant;
 import com.happyplants2.plantapp.service.LibraryService;
@@ -85,5 +86,14 @@ public class MyPlantsLibraryController {
     @GetMapping("plantData/{plantId}")
     public ResponseEntity<?> getNbrOfUsersPerPlant(@PathVariable Long plantId){
     return ResponseEntity.ok(Map.of("count", myPlantsLibraryService.countUsersWithPlant(plantId)));
+    }
+
+    @PutMapping ("/{userPlantId}/edit")
+    public ResponseEntity<?> editUserPlant(@PathVariable long userPlantId, @RequestBody EditPlantDTO dto, HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if(userId == null) {
+            return ResponseEntity.status(401).body("User is not logged in");
+        }
+        return ResponseEntity.ok(myPlantsLibraryService.editUserPlant(userPlantId, dto.getNickname(), dto.getLocation(), userId));
     }
 }

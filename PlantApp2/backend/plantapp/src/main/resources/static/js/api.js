@@ -188,5 +188,28 @@ const api = {
         console.error(error);
         return null;
     }
+},
+
+    async editUserPlant(userPlantId, nickname, location) {
+    try {
+        const response = await fetch(
+            `${API_BASE_URL}/user-plants/${userPlantId}/edit`,
+            {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                credentials: 'include',
+                body: JSON.stringify({nickname, location})
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error('Failed to edit plant');
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error(error);
+        return null;
+    }
 }
 };

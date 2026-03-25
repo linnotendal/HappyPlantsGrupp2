@@ -374,7 +374,9 @@ async function renderLibrarySection(filteredPlants = null) {
             
                 <div class="card-menu">
                         <button class="menu-btn" onclick="toggleMenu(event, ${plant.userPlantId})">⋮</button>                    <div class="menu-dropdown" id="menu-${plant.userPlantId}">
-                        <button onclick="editPlant(${plant.userPlantId})">Edit</button>
+                        <button class="menu-btn" onclick="toggleMenu(event, ${plant.userPlantId})">⋮</button>                    
+                        <div class="menu-dropdown" id="menu-${plant.userPlantId}">
+                        <button onclick="openPlantEditModal(${plant.userPlantId})">Edit</button>
                         <button onclick="removeFromLibrary(${plant.userPlantId})">Remove</button>
                     </div>
                 </div>
@@ -549,6 +551,8 @@ function closePlantModal() {
 function openPlantAddModal(plantData) {
     selectedPlantData = plantData;
 
+    document.getElementById('modal-location').value = "Add a nickname (optional)";
+    document.getElementById('modal-nickname').value = "";
     document.getElementById('modal-plant-name').innerText = plantData.common_name;
     document.getElementById('plant-add-modal').classList.remove('hidden');
 }
@@ -591,5 +595,33 @@ document.getElementById('modal-add-btn').addEventListener('click', async () => {
     } catch (error) {
         console.error(error);
         alert("Failed to add plant. Please try again.");
+    }
+});
+
+function openPlantEditModal(plantId) {
+    userPlantId = plantId;
+
+    document.getElementById('modal-edit-location').value = "";
+    document.getElementById('modal-edit-nickname').value = "";
+    document.getElementById('plant-edit-modal').classList.remove('hidden');
+}
+
+function closePlantEditModal() {
+    document.getElementById('plant-edit-modal').classList.add('hidden');
+}
+
+document.getElementById('modal-edit-btn').addEventListener('click', async () => {
+    const location = document.getElementById('modal-edit-location').value.trim();
+    const nickname = document.getElementById('modal-edit-nickname').value.trim();
+
+    try {
+        const savedPlant = await api.editUserPlant(userPlantId, nickname, location);
+
+        showSuccessNotification(`Plant edited!`);
+        closePlantEditModal();
+        renderLibrarySection();
+    } catch (error) {
+        console.error(error);
+        alert("Failed to edit plant. Please try again.");
     }
 });
