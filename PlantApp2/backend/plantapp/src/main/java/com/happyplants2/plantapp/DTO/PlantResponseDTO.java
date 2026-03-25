@@ -21,11 +21,8 @@ public class PlantResponseDTO {
     private String defaultImage;
 
     private String family;
-    private Integer waterFrequencyDays;
-    @JsonProperty("care_level")
-    private String careLevel;
     public PlantResponseDTO(Integer id ,String commonName, String scientificName,
-                            String family, String watering, String sunlight, String defaultImage, Integer waterFrequencyDays, String careLevel) {
+                            String family, String watering, String sunlight, String defaultImage) {
         this.id = id;
         this.commonName = commonName;
         this.scientificName = scientificName;
@@ -33,23 +30,6 @@ public class PlantResponseDTO {
         this.watering = watering;
         this.sunlight = sunlight;
         this.defaultImage = defaultImage;
-        this.careLevel=careLevel;
-        this.waterFrequencyDays=waterFrequencyDays;
-    }
-    public Integer waterFrequencyDays(){
-        return waterFrequencyDays;
-    }
-
-    public void waterFrequencyDays(Integer waterFrequencyDays) {
-        this.waterFrequencyDays = waterFrequencyDays;
-    }
-
-    public String getCareLevel() {
-        return careLevel;
-    }
-
-    public void setCareLevel(String careLevel) {
-        this.careLevel = careLevel;
     }
 
     public Integer getId() {

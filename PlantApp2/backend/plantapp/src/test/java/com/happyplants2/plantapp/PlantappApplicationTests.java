@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -141,7 +142,94 @@ class PlantappApplicationTests {
         mockMvc.perform(post("/api/users/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
-                .andExpect(status().is(400));
+                .andExpect(status().is(400))
+                .andExpect(content().string("Username is required"));
+    }
+
+    @Test
+/**
+ A user shall receive an error message
+ if they attempt to create an account without an email.
+ */
+    public void testANV05F_shouldRejectAccountWithoutEmail() throws Exception {
+        String json = """
+                {
+                    "email": "",
+                    "username": "testuser",
+                    "password": "123456"
+                }
+                """;
+
+        mockMvc.perform(post("/api/users/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().is(400))
+                .andExpect(content().string("Email is required"));
+    }
+
+    @Test
+/**
+ A user shall receive an error message
+ if they attempt to create an account without a password.
+ */
+    public void testANV05F_shouldRejectAccountWithoutPassword() throws Exception {
+        String json = """
+                {
+                    "email": "test@test.com",
+                    "username": "testuser",
+                    "password": ""
+                }
+                """;
+
+        mockMvc.perform(post("/api/users/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().is(400))
+                .andExpect(content().string("Password is required"));
+    }
+
+    @Test
+/**
+ A user shall receive an error message
+ if they attempt to create an account with an invalid email.
+ */
+    public void testANV05F_shouldRejectAccountWithInvalidEmail() throws Exception {
+        String json = """
+                {
+                    "email": "test.com",
+                    "username": "testuser",
+                    "password": "123456"
+                }
+                """;
+
+        mockMvc.perform(post("/api/users/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().is(400))
+                .andExpect(content().string("Invalid email format"));
+    }
+
+    @Test
+/**
+ A user shall receive an error message
+ if they attempt to create an account with an email already in use.
+ */
+    public void testANV05F_shouldRejectAccountWithEmailAlreadyInUse() throws Exception {
+        userService.registerUser("test@test.com", "testuser1", "123456");
+
+        String json = """
+                {
+                    "email": "test@test.com",
+                    "username": "testuser2",
+                    "password": "123456"
+                }
+                """;
+
+        mockMvc.perform(post("/api/users/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().is(400))
+                .andExpect(content().string("Email already exists"));
     }
     
     @Test
@@ -161,7 +249,8 @@ class PlantappApplicationTests {
         mockMvc.perform(post("/api/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(loginJson))
-                .andExpect(status().is(400));
+                .andExpect(status().is(400))
+                .andExpect(content().string("User with this email is not found"));
     }
 
     @Test
@@ -181,7 +270,8 @@ class PlantappApplicationTests {
         mockMvc.perform(post("/api/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(loginJson))
-                .andExpect(status().is(400));
+                .andExpect(status().is(400))
+                .andExpect(content().string("Wrong password"));
     }
 
     @Test
@@ -200,7 +290,8 @@ class PlantappApplicationTests {
         mockMvc.perform(post("/api/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(loginJson))
-                .andExpect(status().is(400));
+                .andExpect(status().is(400))
+                .andExpect(content().string("User with this email is not found"));
     }
 
     @Test
@@ -282,6 +373,30 @@ class PlantappApplicationTests {
                 .andExpect(jsonPath("$[*].nickName").value(hasItem("LibraryPlant")));
     }
 
+    @Test
+/**
+ A user shall be able to categorize their plants
+ based on their location.
+ */
+    void testBIB05F_categorizePlants() throws Exception {
+        User testUser = userService.registerUser("test@test.com", "testUser", "123456");
+
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("userId", testUser.getId());
+
+        PlantTemplate template = new PlantTemplate(456, "Fern", "Polypodiopsida", "Polypodiaceae",
+                "frequent", "part shade", "fern.jpg", 3);
+        plantTemplateRepository.save(template);
+
+        UserPlant userPlant = new UserPlant(testUser, template, LocalDate.now());
+        userPlant.setLocation("Kitchen");
+        userPlantsRepository.save(userPlant);
+
+        mockMvc.perform(get("/api/user-plants")
+                        .session(session))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[*].location").value("Kitchen"));
+    }
 
     @Test
 /**
@@ -374,6 +489,91 @@ class PlantappApplicationTests {
         assertEquals(3, userPlant.getDaysUntilWater());
     }
 
+    @Test
+    /**A user shall be able to receive a random plant suggestion
+     * of a plant not in their library.
+     */
+    public void testINF03F_plantSuggestionRandomNotOwned() throws Exception {
+        User testUser = userService.registerUser("test@test.com", "testuser", "123456");
+
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("userId", testUser.getId());
+
+        PlantTemplate template = new PlantTemplate(1337, "Rose", "Rosa", "Rosaceae",
+                "frequent", "full sun", "image.jpg", 7);
+        plantTemplateRepository.save(template);
+
+        PlantTemplate template2 = new PlantTemplate(999, "Monstera", "Monstera deliciosa", "Araceae",
+                "average", "part shade", "monstera.jpg", 7);
+        plantTemplateRepository.save(template2);
+
+        UserPlant userPlant = new UserPlant(testUser, template, LocalDate.now());
+        userPlant.setNickName("LibraryPlant");
+        userPlantsRepository.save(userPlant);
+
+        mockMvc.perform(get("/api/user-plants/suggestions/content")
+                        .session(session))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.commonName").value("Monstera"));
+    }
+
+    @Test
+    /**A user shall be able to receive a plant suggestion
+     * of a plant not in their library based on other user popularity.
+     */
+    public void testINF03F_plantSuggestionPopularityBased() throws Exception {
+        User testUser = userService.registerUser("test@test.com", "testuser", "123456");
+        User testUser2 = userService.registerUser("testing@test.com", "testuser2", "123456");
+
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("userId", testUser.getId());
+
+        PlantTemplate template = new PlantTemplate(1337, "Rose", "Rosa", "Rosaceae",
+                "frequent", "full sun", "image.jpg", 7);
+        plantTemplateRepository.save(template);
+
+        PlantTemplate template2 = new PlantTemplate(999, "Monstera", "Monstera deliciosa", "Araceae",
+                "average", "part shade", "monstera.jpg", 7);
+        plantTemplateRepository.save(template2);
+
+        UserPlant userPlant = new UserPlant(testUser2, template, LocalDate.now());
+        userPlant.setNickName("LibraryPlant");
+        userPlantsRepository.save(userPlant);
+
+        mockMvc.perform(get("/api/user-plants/suggestions/popular")
+                        .session(session))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.commonName").value("Rose"));
+    }
+
+    @Test
+    /**
+     A user shall be able to see statistics for how many users own a plant
+     */
+    public void testINF04F_userStatisticsForPlants() throws Exception {
+        User testUser = userService.registerUser("test@test.com", "testuser", "123456");
+        User testUser2 = userService.registerUser("testing@test.com", "testuser2", "123456");
+
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("userId", testUser.getId());
+
+        PlantTemplate template = new PlantTemplate(1337, "Rose", "Rosa", "Rosaceae",
+                "frequent", "full sun", "image.jpg", 7);
+        plantTemplateRepository.save(template);
+
+        UserPlant userPlant = new UserPlant(testUser, template, LocalDate.now());
+        userPlant.setNickName("LibraryPlant");
+        userPlantsRepository.save(userPlant);
+
+        UserPlant userPlant2 = new UserPlant(testUser2, template, LocalDate.now());
+        userPlant2.setNickName("LibraryPlant");
+        userPlantsRepository.save(userPlant2);
+
+        mockMvc.perform(get("/api/user-plants/plantData/1337")
+                        .session(session))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.count").value(2));
+    }
 
     @Test
 /**
@@ -419,13 +619,20 @@ class PlantappApplicationTests {
         assertEquals(before, after);
     }
 
-    @Disabled("Not implemented yet")
     @Test
 /**
- A user shall be able to see suggestions for different plants and search
- for plants based on plant name.
+ A user shall be able to search for plants based on plant name.
  */
-    public void testSOK01F_shouldProvidePlantSuggestionsAndSearch() {
+    public void testSOK01F_shouldReturnPlantsMatchingSearchName() throws Exception {
+        PlantTemplate template = new PlantTemplate(999, "Monstera", "Monstera deliciosa", "Araceae",
+                "average", "part shade", "monstera.jpg", 7);
+        plantTemplateRepository.save(template);
+
+        mockMvc.perform(get("/api/discover/search")
+                        .param("name", "Monstera"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$[0].common_name", containsStringIgnoringCase("monstera")));
     }
 
     @Test
@@ -480,4 +687,13 @@ class PlantappApplicationTests {
                 .andExpect(jsonPath("$.lastWatered").value(LocalDate.now().toString()));
     }
 
+    /**
+     * The application shall return 401 Unauthorized when a user
+     * attempts to access their profile without being logged in.
+     */
+    @Test
+    void testGetCurrentUser_shouldReturn401WhenNotLoggedIn() throws Exception {
+        mockMvc.perform(get("/api/users/me"))
+                .andExpect(status().isUnauthorized());
+    }
 }
