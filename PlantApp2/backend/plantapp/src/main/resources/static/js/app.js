@@ -489,7 +489,7 @@ async function waterPlant(userPlantId) {
                 renderLibrarySection(updatedLibrary);
             }
             showSuccessNotification("Plant watered! 💧");
-            await renderLibrarySection();
+            //await renderLibrarySection();
         }
     } catch (error) {
         console.error("Failed to water plant:", error);
