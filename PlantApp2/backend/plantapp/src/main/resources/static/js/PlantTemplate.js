@@ -16,7 +16,7 @@ class PlantTemplate{
         this.waterFrequencyDays = waterFrequencyDays;
         this.family = family;
         this.sunlight = sunlight;
-        this.default_image = "tempplant.jpg";
+        this.default_image = default_image;
     }
 
 

@@ -36,11 +36,11 @@ public class PlantImportService {
     public void runImportOnStartup() {
         if (repository.count() > 10) {
             System.out.println("API will not be called, the database has data");
-            //fixFamilyNames();
+            fixFamilyNames();
             return;
         }
         System.out.println("application started, loading plants from API has started");
-        importIndoorPlants(40);
+        importIndoorPlants(10);
     }
 
     /**
@@ -65,44 +65,56 @@ public class PlantImportService {
         repository.saveAll(plants);
     }
 
-    public void importIndoorPlants(int limit) {
-        String url = "https://perenual.com/api/species-list?key=" + apiKey + "&per_page=" + limit + "&indoor=true";
-        try{
-            SpeciesListDTO response = restTemplate.getForObject(url, SpeciesListDTO.class);
-            if (response == null || response.getData() == null) return;
-            List<PlantTemplate> plants = new ArrayList<>();
+    public void importIndoorPlants(int pages) {
+        List<PlantTemplate> plants = new ArrayList<>();
 
-            for (PlantDto dto : response.getData()) {
-                PlantTemplate plant = new PlantTemplate();
-                plant.setId(dto.getId());
-                plant.setCommonName(dto.getCommonName());
-                if (dto.getScientificName() != null && !dto.getScientificName().isEmpty()) {
-                    plant.setScientificName(String.join(", ", dto.getScientificName()));
-                }
-                plant.setFamily(dto.getFamily());
-                plant.setWatering(dto.getWatering());
-                if (dto.getSunlight() != null) {
-                    plant.setSunlight(String.join(", ", dto.getSunlight()));
-                }
-                if (dto.getDefaultImage() != null) {
-                    plant.setImageUrl(dto.getDefaultImage().getOriginal_url());
-                }
+        try {
+            for (int page = 1; page <= pages; page++) {
 
-                String sunlightString = "";
-                if (dto.getSunlight() != null && !dto.getSunlight().isEmpty()) {
-                    sunlightString = String.join(", ", dto.getSunlight());
-                }
-                plant.setSunlight(sunlightString);
-                Integer waterDays = extractWateringDays(dto);
+                String url = "https://perenual.com/api/species-list?key="
+                        + apiKey
+                        + "&per_page=100"
+                        + "&page=" + page
+                        + "&indoor=true";
 
-                if (waterDays == null) {
-                    waterDays = 7;
+                SpeciesListDTO response = restTemplate.getForObject(url, SpeciesListDTO.class);
+
+                if (response == null || response.getData() == null) continue;
+
+                for (PlantDto dto : response.getData()) {
+                    PlantTemplate plant = new PlantTemplate();
+
+                    plant.setId(dto.getId());
+                    plant.setCommonName(dto.getCommonName());
+
+                    if (dto.getScientificName() != null && !dto.getScientificName().isEmpty()) {
+                        plant.setScientificName(String.join(", ", dto.getScientificName()));
+                    }
+
+                    plant.setFamily(dto.getFamily());
+
+                    if (dto.getSunlight() != null && !dto.getSunlight().isEmpty()) {
+                        plant.setSunlight(String.join(", ", dto.getSunlight()));
+                    }
+
+                    if (dto.getDefaultImage() != null) {
+                        plant.setImageUrl(dto.getDefaultImage().getOriginal_url());
+                    }
+
+                    Integer waterDays = extractWateringDays(dto);
+                    if (waterDays == null) {
+                        waterDays = 7;
+                    }
+
+                    plant.setWaterFrequencyDays(waterDays);
+
+                    plants.add(plant);
                 }
-                plant.setWaterFrequencyDays(waterDays);
-                plants.add(plant);
             }
+
             repository.saveAll(plants);
-        }catch (Exception e){
+
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

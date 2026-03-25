@@ -221,3 +221,4 @@ resources/Testdata
 UsabilityTestProgram.java
 UsabilityTestProgram.class
 /resources/searchHistory.txt
+PlantApp2/backend/plantapp/src/main/resources/application.properties

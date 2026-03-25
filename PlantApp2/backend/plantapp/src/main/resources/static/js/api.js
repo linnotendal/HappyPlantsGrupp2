@@ -72,6 +72,7 @@ const api = {
             if (!response.ok) throw new Error('Backend not available');
 
             const data = await response.json();
+            console.log(data);
             return new UserPlant(data);
         } catch (error) {
             console.warn('Using localStorage fallback:', error.message);

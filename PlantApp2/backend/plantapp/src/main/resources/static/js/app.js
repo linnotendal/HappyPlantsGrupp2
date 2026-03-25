@@ -553,8 +553,9 @@ document.getElementById('modal-add-btn').addEventListener('click', async () => {
 
     try {
         const savedPlant = await api.addToLibrary(selectedPlantData, location);
+        console.log(savedPlant);
         if (nickname) {
-            await api.setNickName(savedPlant.userPlantId, nickname);
+            await api.setNickName(savedPlant.plantId, nickname);
         }
 
         showSuccessNotification(`${selectedPlantData.common_name} added to your library!`);

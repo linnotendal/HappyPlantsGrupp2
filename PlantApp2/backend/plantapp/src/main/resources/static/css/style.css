@@ -85,6 +85,10 @@ nav {
     margin-left: auto;
 }
 
+.delete{
+    margin-left: auto;
+}
+
 h2 {
     font-family: 'LogoFont', serif;
     color: #559470;
@@ -776,6 +780,22 @@ section { position: relative; }
 .room-tab.active {
     background: #405e21;
     color: white;
+}
+
+#modal-nickname {
+    width: 100%;
+    padding: 10px 12px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    border: 2px solid #6b9c38;
+    background: #f9f9f9;
+    color: #405e21;
+    font-size: 0.95em;
+    transition: all 0.2s ease;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    cursor: pointer;
 }
 
 #modal-location:focus {
