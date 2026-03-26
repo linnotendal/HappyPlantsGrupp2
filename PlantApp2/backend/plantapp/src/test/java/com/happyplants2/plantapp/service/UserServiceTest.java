@@ -172,6 +172,7 @@ class UserServiceTest {
 //    }
 
 
+
     @Test
     void deleteNonExistingUser() {
         long userId = 1L;
