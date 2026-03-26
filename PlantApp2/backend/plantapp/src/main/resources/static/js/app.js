@@ -550,9 +550,15 @@ function closePlantModal() {
 function openPlantAddModal(plantData) {
     selectedPlantData = plantData;
 
-    document.getElementById('modal-location').value = "Add a nickname (optional)";
+    if (!plantData.common_name) {
+        document.getElementById('modal-plant-name').innerText = plantData.commonName;
+    } else {
+        document.getElementById('modal-plant-name').innerText = plantData.common_name;
+    }
+
+    document.getElementById('modal-location').value = "";
     document.getElementById('modal-nickname').value = "";
-    document.getElementById('modal-plant-name').innerText = plantData.common_name;
+
     document.getElementById('plant-add-modal').classList.remove('hidden');
 }
 
