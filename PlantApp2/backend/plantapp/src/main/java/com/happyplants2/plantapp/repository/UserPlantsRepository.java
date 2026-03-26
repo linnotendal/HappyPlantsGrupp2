@@ -3,8 +3,10 @@ package com.happyplants2.plantapp.repository;
 import com.happyplants2.plantapp.model.PlantTemplate;
 import com.happyplants2.plantapp.model.UserPlant;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -29,6 +31,11 @@ public interface UserPlantsRepository extends JpaRepository<UserPlant, Long> {
     WHERE up.plant.id = :plantId
 """)
     long countUsersWithPlant(Long plantId);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Transactional
+    @Query("DELETE FROM UserPlant up WHERE up.user.id = :userId")
+    void deleteByUserId(Long userId);
 }
 
 

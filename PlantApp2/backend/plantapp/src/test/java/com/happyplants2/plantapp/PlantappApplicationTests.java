@@ -127,6 +127,36 @@ class PlantappApplicationTests {
 
     @Test
 /**
+ A user shall be able to delete their account
+ */
+    public void testANV04F_shouldDeleteAccount() throws Exception {
+        User testUser = userService.registerUser("delete@test.com", "deleter", "123456");
+        userRepository.saveAndFlush(testUser);
+
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("userId", testUser.getId());
+
+        PlantTemplate template = new PlantTemplate(789, "Basil", "Ocimum basilicum", "Lamiaceae",
+                "frequent", "full sun", "basil.jpg", 2);
+        plantTemplateRepository.saveAndFlush(template);
+
+        UserPlant userPlant = new UserPlant(testUser, template, LocalDate.now());
+        userPlant.setNickName("Plant");
+        userPlant = userPlantsRepository.saveAndFlush(userPlant);
+
+        userRepository.flush();
+        userPlantsRepository.flush();
+
+        mockMvc.perform(delete("/api/users/delete")
+                        .session(session))
+                .andExpect(status().isOk());
+
+        assertFalse(userRepository.existsById(testUser.getId()));
+        assertFalse(userPlantsRepository.existsById(userPlant.getId()));
+    }
+
+    @Test
+/**
  A user shall receive an error message
  if they attempt to create an account without a username.
  */
@@ -396,6 +426,72 @@ class PlantappApplicationTests {
                         .session(session))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[*].location").value("Kitchen"));
+    }
+
+    @Test
+/**
+ A user shall be able to edit the nickname of their plants
+ */
+    void testBIB06F_editPlantNickname() throws Exception {
+        User testUser = userService.registerUser("test@test.com", "testUser", "123456");
+
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("userId", testUser.getId());
+
+        PlantTemplate template = new PlantTemplate(456, "Fern", "Polypodiopsida", "Polypodiaceae",
+                "frequent", "part shade", "fern.jpg", 3);
+        plantTemplateRepository.save(template);
+
+        UserPlant userPlant = new UserPlant(testUser, template, LocalDate.now());
+        userPlant.setNickName("Plant");
+        userPlantsRepository.save(userPlant);
+
+        String json = """
+                {
+                    "nickname": "Planty",
+                    "location": ""
+                }
+                """;
+
+        mockMvc.perform(put("/api/user-plants/" + userPlant.getId() + "/edit")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json)
+                        .session(session))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.nickName").value("Planty"));
+    }
+
+    @Test
+/**
+ A user shall be able to edit the location of their plants
+ */
+    void testBIB06F_editPlantLocation() throws Exception {
+        User testUser = userService.registerUser("test@test.com", "testUser", "123456");
+
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("userId", testUser.getId());
+
+        PlantTemplate template = new PlantTemplate(456, "Fern", "Polypodiopsida", "Polypodiaceae",
+                "frequent", "part shade", "fern.jpg", 3);
+        plantTemplateRepository.save(template);
+
+        UserPlant userPlant = new UserPlant(testUser, template, LocalDate.now());
+        userPlant.setLocation("Kitchen");
+        userPlantsRepository.save(userPlant);
+
+        String json = """
+                {
+                    "nickname": "",
+                    "location": "Office"
+                }
+                """;
+
+        mockMvc.perform(put("/api/user-plants/" + userPlant.getId() + "/edit")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json)
+                        .session(session))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.location").value("Office"));
     }
 
     @Test

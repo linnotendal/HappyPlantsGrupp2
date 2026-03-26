@@ -13,27 +13,31 @@
         <header>
             <h1>My Happy Plants</h1>
             <nav>
-                <button class="nav-btn active" onclick="showSection('library')"
-                        data-tooltip="View your saved plants">
-                    My Plants
-                </button>
-                <button class="nav-btn" onclick="showSection('discover')"
-                        data-tooltip="View all available plants">
-                    Discover
-                </button>
-                <button class="nav-btn" onclick="showSection('recommended')"
-                        data-tooltip="Find new plants based on your library">
-                    Recommendations
-                </button>
+                <div>
+                    <button class="nav-btn active" onclick="showSection('library')"
+                            data-tooltip="View your saved plants">
+                        My Plants
+                    </button>
+                    <button class="nav-btn" onclick="showSection('discover')"
+                            data-tooltip="View all available plants">
+                        Discover
+                    </button>
+                    <button class="nav-btn" onclick="showSection('recommended')"
+                            data-tooltip="Find new plants based on your library">
+                        Recommendations
+                    </button>
+                </div>
 
-                <button id="delete-btn" class="nav-btn delete"
-                        data-tooltip="Delete">
-                    Delete account
-                </button>
-                <button id="logout-btn" class="nav-btn logout"
-                        data-tooltip="Log out from your account">
-                    Log out
-                </button>
+                <div>
+                    <button id="delete-btn" class="nav-btn delete"
+                            data-tooltip="Delete your account">
+                        Delete account
+                    </button>
+                    <button id="logout-btn" class="nav-btn logout"
+                            data-tooltip="Log out from your account">
+                        Log out
+                    </button>
+                </div>
 
                 
             </nav>
@@ -107,6 +111,24 @@
                 <option value="Office">Office</option>
             </select>
             <button id="modal-add-btn">Add to My Plants</button>
+        </div>
+    </div>
+
+    <div id="plant-edit-modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closePlantEditModal()">&times;</span>
+            <h3>Edit Plant</h3>
+            <label for="modal-nickname">Plant nickname:</label>
+            <input type="text" id="modal-edit-nickname" placeholder="" maxlength="30">
+            <label for="modal-location">Plant location:</label>
+            <select id="modal-edit-location">
+                <option value="" selected>Select room (optional)</option>
+                <option value="Living Room">Living Room</option>
+                <option value="Bedroom">Bedroom</option>
+                <option value="Kitchen">Kitchen</option>
+                <option value="Office">Office</option>
+            </select>
+            <button id="modal-edit-btn">Edit</button>
         </div>
     </div>
 

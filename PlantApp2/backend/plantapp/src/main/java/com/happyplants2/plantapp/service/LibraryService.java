@@ -130,4 +130,21 @@ public class LibraryService {
         userPlantsRepository.save(plant);
         return plant;
     }
+
+    public Object editUserPlant(long userPlantId, String nickname, String location, Long userId) {
+        UserPlant plant = userPlantsRepository.findById(userPlantId).orElse(null);
+
+        if (plant == null) {
+            return "Plant not found";
+        }
+
+        if (!plant.getUser().getId().equals(userId)) {
+            return "Not allowed";
+        }
+
+        if(nickname != "") { plant.setNickName(nickname); }
+        if(location != "") { plant.setLocation(location); }
+        userPlantsRepository.save(plant);
+        return plant;
+    }
 }
