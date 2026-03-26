@@ -373,7 +373,6 @@ async function renderLibrarySection(filteredPlants = null) {
             <div class="plant-card ${needsWater ? 'needs-water' : ''}">
             
                 <div class="card-menu">
-                        <button class="menu-btn" onclick="toggleMenu(event, ${plant.userPlantId})">⋮</button>                    <div class="menu-dropdown" id="menu-${plant.userPlantId}">
                         <button class="menu-btn" onclick="toggleMenu(event, ${plant.userPlantId})">⋮</button>                    
                         <div class="menu-dropdown" id="menu-${plant.userPlantId}">
                         <button onclick="openPlantEditModal(${plant.userPlantId})">Edit</button>
