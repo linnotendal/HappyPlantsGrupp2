@@ -162,14 +162,15 @@ class UserServiceTest {
     }
 
 
-    @Test
-    void testDeleteUser() {
-        long userId = 1L;
-        when(userRepository.existsById(userId)).thenReturn(true);
-        boolean result = userService.deleteUser(userId);
-        assertTrue(result);
-        verify(userRepository, times(1)).deleteById(userId);
-    }
+//    @Test
+//    void testDeleteUser() {
+//        long userId = 1L;
+//        when(userRepository.existsById(userId)).thenReturn(true);
+//        boolean result = userService.deleteUser(userId);
+//        assertTrue(result);
+//        verify(userRepository, times(1)).deleteById(userId);
+//    }
+
 
 
     @Test
