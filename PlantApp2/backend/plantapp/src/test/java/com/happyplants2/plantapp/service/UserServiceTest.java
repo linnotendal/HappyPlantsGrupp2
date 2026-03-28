@@ -1,6 +1,7 @@
 package com.happyplants2.plantapp.service;
 
 import com.happyplants2.plantapp.model.User;
+import com.happyplants2.plantapp.repository.UserPlantsRepository;
 import com.happyplants2.plantapp.repository.UserRepository;
 import jakarta.servlet.http.HttpSession;
 import org.junit.jupiter.api.Disabled;
@@ -20,6 +21,8 @@ class UserServiceTest {
     private UserService userService;
     @Mock
     private UserRepository userRepository;
+    @Mock
+    private UserPlantsRepository userPlantsRepository;
     @Mock
     private HttpSession session;
     @Mock
@@ -169,7 +172,9 @@ class UserServiceTest {
         boolean result = userService.deleteUser(userId);
         assertTrue(result);
         verify(userRepository, times(1)).deleteById(userId);
+        verify(userPlantsRepository, times(1)).deleteByUserId(userId);
     }
+
 
 
     @Test
